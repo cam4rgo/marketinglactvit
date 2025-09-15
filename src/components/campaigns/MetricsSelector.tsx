@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -169,10 +169,10 @@ const CATEGORY_LABELS = {
 };
 
 const CATEGORY_COLORS = {
-  basic: 'border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-blue-600/5',
-  engagement: 'border-green-500/20 bg-gradient-to-br from-green-500/10 to-green-600/5',
-  cost: 'border-orange-500/20 bg-gradient-to-br from-orange-500/10 to-orange-600/5',
-  conversion: 'border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-purple-600/5'
+  basic: 'border-blue-500/40 bg-blue-500/5',
+  engagement: 'border-emerald-500/40 bg-emerald-500/5',
+  cost: 'border-amber-500/40 bg-amber-500/5',
+  conversion: 'border-violet-500/40 bg-violet-500/5'
 };
 
 const CATEGORY_ICONS = {
@@ -251,38 +251,40 @@ export const MetricsSelector: React.FC<MetricsSelectorProps> = ({
   const totalCount = Object.keys(selectedMetrics).length;
 
   return (
-    <Card className={`${className} bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-slate-700/50 shadow-2xl`}>
-      <CardHeader className="pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <CardTitle className="flex items-center gap-3 text-white text-xl font-semibold">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg shadow-lg">
+    <Card className={`${className} bg-slate-900 border-slate-600/50 shadow-xl`}>
+      <CardHeader className="pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 lg:gap-6">
+          <div className="space-y-3">
+            <CardTitle className="flex items-center gap-4 text-white text-xl font-bold">
+              <div className="p-3 bg-blue-600 rounded-lg">
                 <Settings className="w-5 h-5 text-white" />
               </div>
-              Seletor de Métricas
+              <span className="text-white">
+                Seletor de Métricas
+              </span>
             </CardTitle>
-            <CardDescription className="text-slate-300 text-sm leading-relaxed">
-              Escolha as métricas que deseja visualizar nos relatórios
+            <CardDescription className="text-slate-400 text-sm max-w-md">
+              Escolha as métricas que deseja visualizar nos relatórios e dashboards
             </CardDescription>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center w-full sm:w-auto">
             <Badge 
               variant="outline" 
-              className="border-slate-600/50 bg-slate-800/50 text-slate-200 px-3 py-1.5 text-sm font-medium backdrop-blur-sm"
+              className="border-slate-500/50 bg-slate-800 text-slate-200 px-3 py-1 text-sm"
             >
               {selectedCount} de {totalCount} selecionadas
             </Badge>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-8">
+      <CardContent className="space-y-6">
         {/* Botões de Ação Rápida */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={selectEssentialMetrics}
-            className="border-slate-600/50 bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-slate-200 hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-500/50 transition-all duration-300 backdrop-blur-sm shadow-lg hover:shadow-blue-500/25 px-4 py-2"
+            className="border-blue-500/50 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20 hover:border-blue-400 transition-colors duration-200 px-4 py-2 w-full sm:w-auto"
           >
             <Sparkles className="w-4 h-4 mr-2" />
             Métricas Essenciais
@@ -291,7 +293,7 @@ export const MetricsSelector: React.FC<MetricsSelectorProps> = ({
             variant="outline" 
             size="sm" 
             onClick={clearAllMetrics}
-            className="border-slate-600/50 bg-slate-800/30 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500/50 transition-all duration-300 backdrop-blur-sm px-4 py-2"
+            className="border-slate-500/50 bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 hover:border-slate-400 transition-colors duration-200 px-4 py-2 w-full sm:w-auto"
           >
             Limpar Tudo
           </Button>
@@ -308,32 +310,33 @@ export const MetricsSelector: React.FC<MetricsSelectorProps> = ({
           return (
             <div 
               key={category} 
-              className={`border rounded-xl p-6 transition-all duration-300 hover:shadow-xl backdrop-blur-sm ${
+              className={`border rounded-xl p-6 transition-colors duration-200 ${
                 CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS]
-              } hover:border-opacity-40`}
+              }`}
             >
+              
               {/* Header da Categoria */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-lg bg-gradient-to-br ${
-                    category === 'basic' ? 'from-blue-500 to-blue-600' :
-                    category === 'engagement' ? 'from-green-500 to-green-600' :
-                    category === 'cost' ? 'from-orange-500 to-orange-600' :
-                    'from-purple-500 to-purple-600'
-                  } shadow-lg`}>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-lg ${
+                    category === 'basic' ? 'bg-blue-600' :
+                    category === 'engagement' ? 'bg-emerald-600' :
+                    category === 'cost' ? 'bg-amber-600' :
+                    'bg-violet-600'
+                  }`}>
                     <CategoryIcon className="w-5 h-5 text-white" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-white text-lg">
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-white text-lg">
                       {CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS]}
                     </h3>
                     <Badge 
                       variant="secondary" 
-                      className={`text-xs mt-1 ${
-                        someSelected ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
-                        allSelected ? 'bg-green-500/20 text-green-300 border-green-500/30' :
-                        'bg-slate-700/50 text-slate-300 border-slate-600/50'
-                      } transition-all duration-300`}
+                      className={`text-xs font-medium px-3 py-1 ${
+                        someSelected ? 'bg-yellow-500/20 text-yellow-200 border-yellow-400/40' :
+                        allSelected ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40' :
+                        'bg-slate-700/60 text-slate-300 border-slate-500/40'
+                      } transition-colors duration-200`}
                     >
                       {categorySelected}/{categoryTotal} selecionadas
                     </Badge>
@@ -345,7 +348,7 @@ export const MetricsSelector: React.FC<MetricsSelectorProps> = ({
                     size="sm"
                     onClick={() => selectCategoryMetrics(category, true)}
                     disabled={allSelected}
-                    className="text-slate-300 hover:bg-white/10 hover:text-white transition-all duration-200 disabled:opacity-50 px-3 py-1.5"
+                    className="text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-200 disabled:opacity-50 px-4 py-2 border border-slate-600/50"
                   >
                     Todos
                   </Button>
@@ -354,7 +357,7 @@ export const MetricsSelector: React.FC<MetricsSelectorProps> = ({
                     size="sm"
                     onClick={() => selectCategoryMetrics(category, false)}
                     disabled={categorySelected === 0}
-                    className="text-slate-300 hover:bg-white/10 hover:text-white transition-all duration-200 disabled:opacity-50 px-3 py-1.5"
+                    className="text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-200 disabled:opacity-50 px-4 py-2 border border-slate-600/50"
                   >
                     Nenhum
                   </Button>
@@ -362,7 +365,7 @@ export const MetricsSelector: React.FC<MetricsSelectorProps> = ({
               </div>
 
               {/* Lista de Métricas */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {metrics.map((metric) => {
                   const isSelected = selectedMetrics[metric.key];
                   const IconComponent = metric.icon;
@@ -370,48 +373,38 @@ export const MetricsSelector: React.FC<MetricsSelectorProps> = ({
                   return (
                     <div
                       key={metric.key}
-                      className={`group flex items-start gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer transform hover:scale-[1.02] ${
+                      className={`flex items-start gap-3 p-4 rounded-lg border transition-colors duration-200 cursor-pointer min-h-[100px] ${
                         isSelected 
-                          ? 'border-blue-500/50 bg-gradient-to-br from-blue-500/20 to-purple-500/10 shadow-lg shadow-blue-500/25 ring-1 ring-blue-500/20' 
-                          : 'border-slate-600/30 bg-slate-800/30 hover:bg-slate-700/40 hover:border-slate-500/50 hover:shadow-lg'
+                          ? 'border-emerald-500/60 bg-emerald-500/10' 
+                          : 'border-slate-600/40 bg-slate-800/50 hover:bg-slate-700/60 hover:border-slate-500/60'
                       }`}
                       onClick={() => toggleMetric(metric.key)}
                     >
-                      <div className="flex items-center gap-3 flex-1">
-                        <Checkbox
-                          checked={isSelected}
-                          onChange={() => toggleMetric(metric.key)}
-                          className={`transition-all duration-200 ${
-                            isSelected ? 'scale-110' : 'group-hover:scale-105'
-                          }`}
-                        />
-                        <div className={`p-2 rounded-lg transition-all duration-300 ${
+
+                      
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2.5 rounded-lg transition-colors duration-200 ${
                           isSelected 
-                            ? 'bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg' 
-                            : 'bg-slate-700/50 group-hover:bg-slate-600/50'
+                            ? 'bg-emerald-600' 
+                            : 'bg-slate-700'
                         }`}>
-                          <IconComponent className={`w-4 h-4 transition-all duration-300 ${
-                            isSelected ? 'text-white' : `${metric.color} group-hover:scale-110`
+                          <IconComponent className={`w-4 h-4 transition-colors duration-200 ${
+                            isSelected ? 'text-white' : 'text-slate-300'
                           }`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className={`font-medium text-sm transition-all duration-200 ${
-                              isSelected ? 'text-white' : 'text-slate-200 group-hover:text-white'
-                            }`}>
-                              {metric.label}
-                            </span>
-                            {isSelected && (
-                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                            )}
-                          </div>
-                          <p className={`text-xs mt-1.5 transition-all duration-200 ${
-                            isSelected ? 'text-slate-300' : 'text-slate-400 group-hover:text-slate-300'
-                          }`}>
+                          <h4 className="font-semibold text-white text-sm mb-1 leading-tight">
+                            {metric.label}
+                          </h4>
+                          <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
                             {metric.description}
                           </p>
                         </div>
+                        {isSelected && (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        )}
                       </div>
+
                     </div>
                   );
                 })}
@@ -424,7 +417,7 @@ export const MetricsSelector: React.FC<MetricsSelectorProps> = ({
         {selectedCount > 0 && (
           <div className="border-t border-slate-600/30 pt-6 mt-8">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg shadow-lg">
+              <div className="p-2 bg-blue-600 rounded-lg">
                 <CheckCircle2 className="w-4 h-4 text-white" />
               </div>
               <h4 className="font-semibold text-white text-lg">Métricas Selecionadas</h4>
@@ -438,7 +431,7 @@ export const MetricsSelector: React.FC<MetricsSelectorProps> = ({
                     <Badge 
                       key={metric.key} 
                       variant="secondary" 
-                      className="text-sm bg-gradient-to-r from-slate-700 to-slate-600 text-slate-200 border-slate-500/30 px-3 py-1.5 flex items-center gap-2 hover:from-slate-600 hover:to-slate-500 transition-all duration-200 cursor-pointer"
+                      className="text-sm bg-slate-700 text-slate-200 border-slate-500/30 px-3 py-1.5 flex items-center gap-2 hover:bg-slate-600 transition-colors duration-200 cursor-pointer"
                       onClick={() => toggleMetric(metric.key)}
                     >
                       <IconComponent className="w-3.5 h-3.5" />
