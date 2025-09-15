@@ -1,0 +1,301 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import 'leaflet/dist/leaflet.css';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Fix para garantir interatividade do mapa */
+.leaflet-container {
+  z-index: 1 !important;
+  pointer-events: auto !important;
+  touch-action: none !important;
+  cursor: grab !important;
+}
+
+.leaflet-container:active {
+  cursor: grabbing !important;
+}
+
+.leaflet-control-container {
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+.leaflet-popup-pane {
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+.leaflet-map-pane {
+  pointer-events: auto !important;
+  z-index: 1 !important;
+}
+
+.leaflet-marker-pane {
+  pointer-events: auto !important;
+  z-index: 600 !important;
+}
+
+.leaflet-tile-pane {
+  pointer-events: auto !important;
+  z-index: 200 !important;
+}
+
+.leaflet-zoom-box {
+  pointer-events: auto !important;
+}
+
+/* Garantir que controles de zoom funcionem */
+.leaflet-control-zoom {
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+.leaflet-control-zoom a {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Garantir que markers sejam clicáveis e visíveis */
+.leaflet-marker-icon {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 600 !important;
+  position: relative !important;
+}
+
+.leaflet-marker-shadow {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 0.6 !important;
+  z-index: 599 !important;
+}
+
+/* Garantir que popups funcionem */
+.leaflet-popup {
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+/* Prevenir conflitos com Tailwind */
+.leaflet-container * {
+  box-sizing: content-box !important;
+}
+
+.leaflet-container img {
+  max-width: none !important;
+  height: auto !important;
+}
+
+/* Design System - Marketing Campaign Management */
+
+@layer base {
+  :root {
+    /* Dark Theme - Marketing System */
+    --background: 217 32% 11%; /* #1B1D36 */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+
+    --card: 217 32% 13%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 217 32% 11%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Primary - Marketing Yellow */
+    --primary: 49 100% 64%; /* #FFCD03 */
+    --primary-foreground: 217 32% 11%; /* #1B1D36 */
+
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 217 32% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 49 100% 64%;
+    --accent-foreground: 217 32% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 32% 20%; /* #232f43 */
+    --input: 217 32% 17%;
+    --ring: 49 100% 64%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 217 32% 9%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 49 100% 64%;
+    --sidebar-primary-foreground: 217 32% 11%;
+    --sidebar-accent: 217 32% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 32% 20%; /* #232f43 */
+    --sidebar-ring: 49 100% 64%;
+
+    /* Custom Marketing Variables */
+    --marketing-gradient: linear-gradient(135deg, hsl(49 100% 64%) 0%, hsl(39 100% 57%) 100%);
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
+    --info: 217 91% 60%;
+    
+    /* Campaign Status Colors */
+    --status-active: 142 76% 36%;
+    --status-paused: 38 92% 50%;
+    --status-draft: 217 32% 40%;
+    --status-ended: 0 84% 60%;
+  }
+
+  * {
+    border-color: #232f43;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--accent));
+  }
+}
+
+/* Marketing Component Styles */
+@layer components {
+  .marketing-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transition: all 300ms;
+  }
+
+  .metric-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transition: all 300ms;
+    cursor: pointer;
+    &:hover {
+      border-color: hsla(var(--accent), 0.5);
+    }
+  }
+
+  .campaign-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .campaign-status.active {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: rgb(74, 222, 128);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  .campaign-status.paused {
+    background-color: rgba(234, 179, 8, 0.2);
+    color: rgb(250, 204, 21);
+    border: 1px solid rgba(234, 179, 8, 0.3);
+  }
+
+  .campaign-status.draft {
+    background-color: rgba(107, 114, 128, 0.2);
+    color: rgb(156, 163, 175);
+    border: 1px solid rgba(107, 114, 128, 0.3);
+  }
+
+  .campaign-status.ended {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: rgb(248, 113, 113);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    color: hsl(var(--sidebar-foreground));
+    transition-property: color, background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  .sidebar-nav-item.active {
+    background-color: var(--sidebar-accent);
+    color: var(--sidebar-accent-foreground);
+    font-weight: 500;
+  }
+
+  .glass-effect {
+    background-color: hsla(var(--background), 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsla(var(--border), 0.5);
+  }
+}
+
+/* Animations */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .animate-bounce-subtle {
+    animation: bounceSubtle 2s infinite;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes bounceSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Regra específica para o campo de upload de mídia */
+#mediaFiles {
+  padding-top: 0.0rem;
+}
