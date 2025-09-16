@@ -118,15 +118,22 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
     onSuccess: (newDate) => {
       console.log('✅ [DEBUG] Data comemorativa criada com sucesso:', newDate);
       
-      // Atualizar cache manualmente com os novos dados
-      queryClient.setQueryData(['commemorative-dates', filters], (oldData: CommemorativeDate[] | undefined) => {
-        if (!oldData) return [newDate];
-        
-        const updatedList = [...oldData, newDate].sort((a, b) => 
-          createLocalDate(a.date).getTime() - createLocalDate(b.date).getTime()
-        );
-        console.log('🔄 [DEBUG] Cache atualizado manualmente após criação:', updatedList.length, 'itens');
-        return updatedList;
+      // Atualizar cache manualmente para todas as queries relacionadas
+      queryClient.getQueryCache().findAll({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return queryKey[0] === 'commemorative-dates';
+        }
+      }).forEach((query) => {
+        queryClient.setQueryData(query.queryKey, (oldData: CommemorativeDate[] | undefined) => {
+          if (!oldData) return [newDate];
+          
+          const updatedList = [...oldData, newDate].sort((a, b) => 
+            createLocalDate(a.date).getTime() - createLocalDate(b.date).getTime()
+          );
+          console.log('🔄 [DEBUG] Cache atualizado manualmente após criação para query:', query.queryKey, updatedList.length, 'itens');
+          return updatedList;
+        });
       });
       
       // Invalidar todas as queries relacionadas para garantir sincronização
@@ -165,16 +172,22 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
   // Mutation para atualizar data comemorativa
   const updateCommemorateDateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateCommemorateDateData }): Promise<CommemorativeDate> => {
-      console.log('🔄 [DEBUG] updateCommemorateDateMutation iniciado');
-      console.log('🆔 [DEBUG] ID recebido:', id);
-      console.log('📊 [DEBUG] Dados recebidos:', data);
+      // Verificar autenticação
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+      
+      // Preparar payload removendo campos undefined/null
+      const cleanData = Object.fromEntries(
+        Object.entries(data).filter(([_, value]) => value !== undefined)
+      );
       
       const updatePayload = {
-        ...data,
+        ...cleanData,
         updated_at: new Date().toISOString(),
       };
-      
-      console.log('📤 [DEBUG] Payload final para Supabase:', updatePayload);
       
       const { data: result, error } = await supabase
         .from('commemorative_dates')
@@ -183,11 +196,8 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
         .select()
         .single();
 
-      console.log('📥 [DEBUG] Resposta do Supabase - result:', result);
-      console.log('❌ [DEBUG] Resposta do Supabase - error:', error);
-
       if (error) {
-        console.error('💥 [DEBUG] Erro detalhado do Supabase:', error);
+
         throw new Error('Erro ao atualizar data comemorativa: ' + error.message);
       }
       
@@ -195,25 +205,41 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
       return result as CommemorativeDate;
     },
     onSuccess: (updatedData) => {
-      console.log('✅ [DEBUG] Data comemorativa atualizada com sucesso:', updatedData);
       
-      // Atualizar cache manualmente com os novos dados
-      queryClient.setQueryData(['commemorative-dates', filters], (oldData: CommemorativeDate[] | undefined) => {
-        if (!oldData) return [updatedData];
-        
-        const updatedList = oldData.map(item => 
-          item.id === updatedData.id ? updatedData : item
-        );
-        console.log('🔄 [DEBUG] Cache atualizado manualmente:', updatedList.length, 'itens');
-        return updatedList;
+      // Atualizar cache manualmente para todas as queries relacionadas
+      queryClient.getQueryCache().findAll({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return queryKey[0] === 'commemorative-dates';
+        }
+      }).forEach((query) => {
+        queryClient.setQueryData(query.queryKey, (oldData: CommemorativeDate[] | undefined) => {
+          if (!oldData) return [updatedData];
+          
+          const updatedList = oldData.map(item => 
+            item.id === updatedData.id ? updatedData : item
+          );
+          console.log('🔄 [DEBUG] Cache atualizado manualmente para query:', query.queryKey, updatedList.length, 'itens');
+          return updatedList;
+        });
       });
       
       // Invalidar todas as queries relacionadas para garantir sincronização
-      queryClient.invalidateQueries({ queryKey: ['commemorative-dates'] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return queryKey[0] === 'commemorative-dates';
+        }
+      });
       
       // Forçar refetch para garantir que os dados sejam atualizados na UI
       setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ['commemorative-dates'] });
+        queryClient.refetchQueries({ 
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return queryKey[0] === 'commemorative-dates';
+          }
+        });
       }, 100);
       
       console.log('🔄 [DEBUG] Cache atualizado após edição');

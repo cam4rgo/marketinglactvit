@@ -101,7 +101,7 @@ export const CommemorateDateForm: React.FC<CommemorateDateFormProps> = ({
           description: '',
           date: undefined,
           is_mandatory: false,
-          post_type: 'feed',
+          post_type: 'feed' as const,
         });
       }
     }
@@ -109,11 +109,6 @@ export const CommemorateDateForm: React.FC<CommemorateDateFormProps> = ({
 
   const handleSubmit = (data: FormData) => {
     try {
-      console.log('📝 [DEBUG] Formulário submetido');
-      console.log('📋 [DEBUG] Dados originais do formulário:', data);
-      console.log('✏️ [DEBUG] Modo de edição:', !!commemorativeDate);
-      console.log('🆔 [DEBUG] ID da data sendo editada:', commemorativeDate?.id);
-      
       if (!data.date) {
         return;
       }
@@ -122,14 +117,11 @@ export const CommemorateDateForm: React.FC<CommemorateDateFormProps> = ({
       
       const submitData = {
         title: data.title,
-        description: data.description || undefined,
+        description: data.description?.trim() || undefined,
         date: formattedDate,
         is_mandatory: data.is_mandatory,
         post_type: data.post_type,
       };
-      
-      console.log('📤 [DEBUG] Dados formatados para envio:', submitData);
-      console.log('📅 [DEBUG] Data formatada:', formattedDate);
       
       onSubmit(submitData);
     } catch (error) {
