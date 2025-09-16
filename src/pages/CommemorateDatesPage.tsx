@@ -12,7 +12,6 @@ import { CommemorateDatesList } from '@/components/commemorative-dates/Commemora
 import { CommemorateDatesCalendar } from '@/components/commemorative-dates/CommemorateDatesCalendar';
 import { CommemorativeDate, CommemorateDateFilters } from '@/types/commemorative-dates';
 import { createLocalDate } from '@/lib/utils';
-import { toast } from 'sonner';
 
 export const CommemorateDatesPage: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -54,15 +53,13 @@ export const CommemorateDatesPage: React.FC = () => {
     try {
       if (editingDate) {
         await updateDate(editingDate.id, data);
-        toast.success('Data comemorativa atualizada com sucesso!');
       } else {
         await createDate(data);
-        toast.success('Data comemorativa criada com sucesso!');
       }
       setIsFormOpen(false);
       setEditingDate(null);
     } catch (error) {
-      toast.error('Erro ao salvar data comemorativa');
+      // Toast de erro já é exibido pelo hook useCommemorateDates
     }
   };
 
@@ -74,9 +71,8 @@ export const CommemorateDatesPage: React.FC = () => {
   const handleDelete = async (id: string) => {
     try {
       await deleteDate(id);
-      toast.success('Data comemorativa excluída com sucesso!');
     } catch (error) {
-      toast.error('Erro ao excluir data comemorativa');
+      // Toast de erro já é exibido pelo hook useCommemorateDates
     }
   };
 
