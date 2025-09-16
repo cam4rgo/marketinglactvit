@@ -29,12 +29,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { EnhancedDatePicker } from '@/components/ui/enhanced-date-picker';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -86,26 +82,30 @@ export const CommemorateDateForm: React.FC<CommemorateDateFormProps> = ({
     },
   });
 
-  // Reset form when commemorativeDate changes
+  // Reset form when dialog opens or commemorativeDate changes
   useEffect(() => {
-    if (commemorativeDate) {
-      form.reset({
-        title: commemorativeDate.title,
-        description: commemorativeDate.description || '',
-        date: createLocalDate(commemorativeDate.date),
-        is_mandatory: commemorativeDate.is_mandatory,
-        post_type: commemorativeDate.post_type,
-      });
-    } else {
-      form.reset({
-        title: '',
-        description: '',
-        date: undefined,
-        is_mandatory: false,
-        post_type: 'feed',
-      });
+    if (isOpen) {
+      if (commemorativeDate) {
+        // Editing existing date
+        form.reset({
+          title: commemorativeDate.title,
+          description: commemorativeDate.description || '',
+          date: createLocalDate(commemorativeDate.date),
+          is_mandatory: commemorativeDate.is_mandatory,
+          post_type: commemorativeDate.post_type,
+        });
+      } else {
+        // Creating new date - ensure form is completely clean
+        form.reset({
+          title: '',
+          description: '',
+          date: undefined,
+          is_mandatory: false,
+          post_type: 'feed',
+        });
+      }
     }
-  }, [commemorativeDate, form]);
+  }, [isOpen, commemorativeDate, form]);
 
   const handleSubmit = (data: FormData) => {
     try {
@@ -138,7 +138,15 @@ export const CommemorateDateForm: React.FC<CommemorateDateFormProps> = ({
   };
 
   const handleClose = () => {
-    form.reset();
+    // Reset form to default values when closing
+    form.reset({
+      title: '',
+      description: '',
+      date: undefined,
+      is_mandatory: false,
+      post_type: 'feed',
+    });
+    setIsDatePickerOpen(false);
     onClose();
   };
 
@@ -210,23 +218,29 @@ export const CommemorateDateForm: React.FC<CommemorateDateFormProps> = ({
                         <Button
                           variant="outline"
                           className={cn(
-                            'w-full pl-3 text-left font-normal',
+                            'w-full pl-3 text-left font-normal h-10',
                             !field.value && 'text-muted-foreground'
                           )}
                           onClick={() => setIsDatePickerOpen(true)}
                         >
                           {field.value ? (
-                            format(field.value, 'dd/MM/yyyy', { locale: ptBR })
+                            <div className="flex items-center justify-between w-full">
+                              <span className="font-medium">
+                                {format(field.value, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {format(field.value, 'EEEE', { locale: ptBR })}
+                              </span>
+                            </div>
                           ) : (
                             <span>Selecione uma data</span>
                           )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50 shrink-0" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start" style={{zIndex: 9999}}>
-                      <Calendar
-                        mode="single"
+                    <PopoverContent className="w-auto p-4" align="start" style={{zIndex: 9999}}>
+                      <EnhancedDatePicker
                         selected={field.value}
                         onSelect={(date) => {
                           if (date) {
@@ -237,19 +251,12 @@ export const CommemorateDateForm: React.FC<CommemorateDateFormProps> = ({
                         disabled={(date) =>
                           date < new Date('1900-01-01')
                         }
-                        initialFocus
-                        locale={ptBR}
-                        className="rounded-md border"
-                        defaultMonth={new Date()}
-                        modifiers={{
-                          today: new Date()
-                        }}
-                        modifiersStyles={{
-                          today: { backgroundColor: '#fbbf24', color: '#000' }
-                        }}
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormDescription>
+                    Use os seletores de ano e mês para navegar rapidamente até a data desejada.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -261,7 +268,7 @@ export const CommemorateDateForm: React.FC<CommemorateDateFormProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tipo de Post *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o tipo de post" />

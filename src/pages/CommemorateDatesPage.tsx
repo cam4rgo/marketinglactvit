@@ -123,17 +123,6 @@ export const CommemorateDatesPage: React.FC = () => {
           <Plus className="w-4 h-4 mr-2" />
           Nova Data
         </Button>
-        
-        <CommemorateDateForm
-          isOpen={isFormOpen}
-          onClose={() => {
-            setIsFormOpen(false);
-            setEditingDate(null);
-          }}
-          commemorativeDate={editingDate}
-          onSubmit={handleSubmit}
-          isLoading={editingDate ? isUpdating : isCreating}
-        />
       </div>
 
       {/* Estatísticas */}
@@ -282,6 +271,18 @@ export const CommemorateDatesPage: React.FC = () => {
           )}
         </TabsContent>
       </Tabs>
+      
+      {/* Formulário de Data Comemorativa */}
+      <CommemorateDateForm
+        isOpen={isFormOpen}
+        onClose={() => {
+          setIsFormOpen(false);
+          setEditingDate(null);
+        }}
+        commemorativeDate={editingDate}
+        onSubmit={handleSubmit}
+        isLoading={editingDate ? isUpdating : isCreating}
+      />
     </div>
   );
 };

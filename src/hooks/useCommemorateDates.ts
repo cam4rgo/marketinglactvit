@@ -137,6 +137,16 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
         }
       });
       
+      // Forçar refetch para garantir que os dados sejam atualizados na UI
+      setTimeout(() => {
+        queryClient.refetchQueries({ 
+          predicate: (query) => {
+            const queryKey = query.queryKey;
+            return queryKey[0] === 'commemorative-dates';
+          }
+        });
+      }, 100);
+      
       console.log('🔄 [DEBUG] Cache atualizado após criação');
       toast({
         title: 'Sucesso!',
@@ -199,12 +209,12 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
       });
       
       // Invalidar todas as queries relacionadas para garantir sincronização
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const queryKey = query.queryKey;
-          return queryKey[0] === 'commemorative-dates';
-        }
-      });
+      queryClient.invalidateQueries({ queryKey: ['commemorative-dates'] });
+      
+      // Forçar refetch para garantir que os dados sejam atualizados na UI
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['commemorative-dates'] });
+      }, 100);
       
       console.log('🔄 [DEBUG] Cache atualizado após edição');
       toast({

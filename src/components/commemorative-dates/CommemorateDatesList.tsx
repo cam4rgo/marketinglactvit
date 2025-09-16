@@ -82,66 +82,64 @@ export const CommemorateDatesList: React.FC<CommemorateDatesListProps> = ({
   };
 
   const renderDateCard = (date: CommemorativeDate) => (
-    <Card key={date.id} className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
-        <div className="flex flex-col gap-3">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-base sm:text-lg mb-2 truncate">{date.title}</CardTitle>
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              <Badge 
-                variant="outline" 
-                className={`text-white text-xs ${getMandatoryColor(date.is_mandatory)}`}
-              >
-                <Clock className="w-3 h-3 mr-1" />
-                {date.is_mandatory ? 'Obrigatória' : 'Opcional'}
-              </Badge>
-              <Badge 
-                variant="outline" 
-                className={`text-white text-xs ${getPostTypeColor(date.post_type)}`}
-              >
-                {getPostTypeIcon(date.post_type)}
-                <span className="ml-1">
+    <Card key={date.id} className="relative overflow-hidden">
+      <CardContent className="p-3">
+        <div className="space-y-2">
+          {/* Header compacto com título e data */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base font-semibold text-foreground leading-tight truncate mb-2">
+                {date.title}
+              </h3>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge 
+                  variant="secondary" 
+                  className={`text-white text-xs px-2 py-0.5 ${getMandatoryColor(date.is_mandatory)}`}
+                >
+                  {date.is_mandatory ? 'Obrigatória' : 'Opcional'}
+                </Badge>
+                <Badge 
+                  variant="secondary" 
+                  className={`text-white text-xs px-2 py-0.5 ${getPostTypeColor(date.post_type)}`}
+                >
                   {date.post_type === 'story' ? 'Story' : 'Feed'}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  {format(createLocalDate(date.date), "dd/MM/yyyy", { locale: ptBR })}
                 </span>
-              </Badge>
+              </div>
+            </div>
+            
+            {/* Ações compactas */}
+            <div className="flex gap-1 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(date)}
+                className="h-7 w-7 p-0 hover:bg-blue-50"
+              >
+                <Edit className="w-3 h-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(date.id)}
+                disabled={isDeleting}
+                className="h-7 w-7 p-0 hover:bg-red-50 text-red-600"
+              >
+                <Trash2 className="w-3 h-3" />
+              </Button>
             </div>
           </div>
           
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(date)}
-              className="flex-1 sm:flex-none"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              <span>Editar</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onDelete(date.id)}
-              disabled={isDeleting}
-              className="flex-1 sm:flex-none text-white border-none hover:opacity-90"
-              style={{ backgroundColor: '#EF4343' }}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              <span>Excluir</span>
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pt-0 px-3 sm:px-6 pb-3 sm:pb-6">
-        <div className="space-y-2 sm:space-y-3">
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-            <span>{format(createLocalDate(date.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
-          </div>
+
           
+          {/* Descrição compacta */}
           {date.description && (
-            <div className="text-xs sm:text-sm text-muted-foreground">
-              <p className="line-clamp-3">{date.description}</p>
+            <div className="bg-muted/20 rounded p-2 mt-2">
+              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                {date.description}
+              </p>
             </div>
           )}
         </div>
@@ -151,7 +149,7 @@ export const CommemorateDatesList: React.FC<CommemorateDatesListProps> = ({
 
   if (!groupByMonth) {
     return (
-      <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-2">
         {dates.map(renderDateCard)}
       </div>
     );
@@ -160,30 +158,39 @@ export const CommemorateDatesList: React.FC<CommemorateDatesListProps> = ({
   const groupedDates = groupDatesByMonth(dates);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-3">
       {groupedDates.map(([monthKey, monthDates]) => {
         const isExpanded = expandedMonths.has(monthKey);
         const monthName = format(new Date(monthKey + '-01'), "MMMM 'de' yyyy", { locale: ptBR });
         
         return (
-          <div key={monthKey} className="space-y-3 sm:space-y-4">
+          <div key={monthKey} className="space-y-2">
             <div 
-              className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70 transition-colors gap-3"
+              className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg cursor-pointer hover:from-primary/10 hover:to-primary/15 transition-all duration-200 border border-primary/10"
               onClick={() => toggleMonth(monthKey)}
             >
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <h3 className="text-base sm:text-lg font-semibold capitalize truncate">{monthName}</h3>
-                <Badge variant="secondary" className="text-xs shrink-0">
-                  {monthDates.length} {monthDates.length === 1 ? 'data' : 'datas'}
-                </Badge>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-1 h-6 bg-primary rounded-full shrink-0"></div>
+                <div className="flex items-center gap-2 min-w-0">
+                  <h3 className="text-base font-bold capitalize truncate text-foreground">
+                    {monthName}
+                  </h3>
+                  <Badge variant="default" className="text-xs px-2 py-0.5 bg-primary/20 text-primary border-primary/30 shrink-0">
+                    {monthDates.length}
+                  </Badge>
+                </div>
               </div>
-              <Button variant="ghost" size="sm" className="w-full sm:w-auto shrink-0">
-                {isExpanded ? 'Recolher' : 'Expandir'}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2 text-xs hover:bg-primary/10"
+              >
+                {isExpanded ? '↑' : '↓'}
               </Button>
             </div>
             
             {isExpanded && (
-              <div className="space-y-3 sm:space-y-4 pl-0 sm:pl-4">
+              <div className="space-y-4 sm:space-y-5 pl-0 sm:pl-6 animate-in slide-in-from-top-2 duration-300">
                 {monthDates.map(renderDateCard)}
               </div>
             )}
