@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Copy, Check } from 'lucide-react';
-import { ComercialRepresentative } from '@/hooks/useComercialRepresentatives';
+import { ComercialRepresentative } from '@/types/comercial';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { generateWhatsAppLink, formatPhoneNumber } from '@/lib/utils';

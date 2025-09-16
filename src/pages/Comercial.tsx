@@ -4,14 +4,15 @@ import { ModuleProtection } from '@/components/auth/ModuleProtection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Users, Building2, UserCheck, Search } from 'lucide-react';
+import { Plus, Users, Building2, UserCheck, Search, Map } from 'lucide-react';
 import { useComercialRepresentatives } from '@/hooks/useComercialRepresentatives';
 import { RepresentativeForm } from '@/components/comercial/RepresentativeForm';
 import { RepresentativesList } from '@/components/comercial/RepresentativesList';
-
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import MapModal from '@/components/MapModal';
 import { useConfirm } from '@/hooks/use-confirm';
-import type { ComercialRepresentative } from '@/types/comercial';
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
+import { ComercialRepresentative } from "@/types/comercial";
 
 export default function Comercial() {
   const [isFormOpen, setIsFormOpen] = React.useState(false);
@@ -19,6 +20,7 @@ export default function Comercial() {
   const [editingRepresentative, setEditingRepresentative] = React.useState<ComercialRepresentative | undefined>();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = React.useState('');
+  const [isMapOpen, setIsMapOpen] = React.useState(false);
 
   // Debounce search term
   React.useEffect(() => {
@@ -44,20 +46,26 @@ export default function Comercial() {
 
   // Debug: Log current state
   React.useEffect(() => {
-    console.log('Estado atual do módulo comercial:', {
-      representatives,
+    console.log('📊 [COMERCIAL] Componente Comercial renderizado!');
+    console.log('📊 [COMERCIAL] Estado atual do módulo comercial:', {
+      totalRepresentatives: representatives?.length || 0,
       isLoading,
-      error,
-      availableStates
+      error: error?.message,
+      availableStates: availableStates?.length || 0
     });
   }, [representatives, isLoading, error, availableStates]);
 
+  // Estabilizar referência do array de representantes para evitar re-renders desnecessários
+  const stableRepresentatives = React.useMemo(() => {
+    return representatives || [];
+  }, [representatives]);
+
   // Filter representatives based on search term
   const filteredRepresentatives = React.useMemo(() => {
-    if (!debouncedSearchTerm) return representatives;
+    if (!debouncedSearchTerm) return stableRepresentatives;
     
     const searchLower = debouncedSearchTerm.toLowerCase();
-    return representatives.filter(rep => 
+    return stableRepresentatives.filter(rep => 
       rep.nome_completo.toLowerCase().includes(searchLower) ||
       rep.telefone.toLowerCase().includes(searchLower) ||
       rep.escritorio.toLowerCase().includes(searchLower) ||
@@ -66,7 +74,7 @@ export default function Comercial() {
       ) ||
       (rep.estado && rep.estado.toLowerCase().includes(searchLower))
     );
-  }, [representatives, debouncedSearchTerm]);
+  }, [stableRepresentatives, debouncedSearchTerm]);
 
   const handleCreateNew = () => {
     console.log('Abrindo formulário para novo representante');
@@ -115,10 +123,10 @@ export default function Comercial() {
   };
 
   // Estatísticas
-  const activeRepresentatives = representatives.filter(rep => rep.status === 'ativo').length;
-  const totalEscritorios = new Set(representatives.map(rep => rep.escritorio)).size;
-  const totalRepresentantes = representatives.filter(rep => rep.tipo === 'representante').length;
-  const totalBrokers = representatives.filter(rep => rep.tipo === 'broker').length;
+  const activeRepresentatives = stableRepresentatives.filter(rep => rep.status === 'ativo').length;
+  const totalEscritorios = new Set(stableRepresentatives.map(rep => rep.escritorio)).size;
+  const totalRepresentantes = stableRepresentatives.filter(rep => rep.tipo === 'representante').length;
+  const totalBrokers = stableRepresentatives.filter(rep => rep.tipo === 'broker').length;
 
   if (isLoading) {
     return (
@@ -155,7 +163,8 @@ export default function Comercial() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <ModuleProtection moduleId="comercial" moduleName="Comercial">
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
@@ -165,7 +174,13 @@ export default function Comercial() {
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
-
+          <Button variant="outline" onClick={() => {
+            console.log('🗺️ [COMERCIAL] Botão do mapa clicado - abrindo modal');
+            setIsMapOpen(true);
+          }} className="w-full sm:w-auto">
+            <Map className="mr-2 h-4 w-4" />
+            Mapa
+          </Button>
           <Button onClick={handleCreateNew} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Novo Cadastro
@@ -183,7 +198,7 @@ export default function Comercial() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{representatives.length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{stableRepresentatives.length}</div>
             <p className="text-xs text-muted-foreground">
               Representantes e Brokers
             </p>
@@ -215,8 +230,8 @@ export default function Comercial() {
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold">{activeRepresentatives}</div>
             <p className="text-xs text-muted-foreground">
-              {representatives.length > 0 
-                ? `${Math.round((activeRepresentatives / representatives.length) * 100)}% do total`
+              {stableRepresentatives.length > 0 
+                ? `${Math.round((activeRepresentatives / stableRepresentatives.length) * 100)}% do total`
                 : '0% do total'
               }
             </p>
@@ -268,7 +283,7 @@ export default function Comercial() {
             onDelete={handleDelete}
             isDeleting={isDeleting}
           />
-          {filteredRepresentatives.length === 0 && representatives.length > 0 && (
+          {filteredRepresentatives.length === 0 && stableRepresentatives.length > 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
                 Nenhum representante encontrado para "{searchTerm}".
@@ -289,6 +304,13 @@ export default function Comercial() {
       
 
       
+      {/* Modal do Mapa */}
+      <MapModal
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        representatives={stableRepresentatives}
+      />
+
       {/* Dialog de Confirmação */}
       <ConfirmDialog
         open={confirmState.open}
@@ -301,6 +323,7 @@ export default function Comercial() {
         onConfirm={confirmState.onConfirm}
         onCancel={confirmState.onCancel}
       />
-    </div>
+      </div>
+    </ModuleProtection>
   );
 }

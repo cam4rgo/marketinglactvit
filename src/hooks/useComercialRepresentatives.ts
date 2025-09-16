@@ -21,7 +21,7 @@ export interface ComercialRepresentative {
   nome_completo: string;
   telefone: string;
   escritorio: string;
-  cidades_atendidas: string;
+  cidades_atendidas: string[];
   estado?: string;
   tipo: 'representante' | 'broker';
   status: 'ativo' | 'inativo';
@@ -48,13 +48,14 @@ export function useComercialRepresentatives() {
   const { data: representatives, isLoading, error } = useQuery({
     queryKey: ['comercial-representatives'],
     queryFn: async () => {
-      console.log('🔍 [REPRESENTATIVES DEBUG] Iniciando busca de representantes...');
+      console.log('🔍 [COMERCIAL DEBUG] Buscando representantes comerciais...');
+      console.log('🔍 [COMERCIAL DEBUG] Hook useComercialRepresentatives executado!');
+      console.log('🔍 [REPRESENTATIVES DEBUG] Query sendo executada no contexto:', window.location.pathname);
       
       try {
         const { data, error } = await supabase
           .from('comercial_representatives')
           .select('*')
-          .eq('status', 'ativo')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -65,12 +66,27 @@ export function useComercialRepresentatives() {
         console.log('✅ [REPRESENTATIVES DEBUG] Representantes encontrados:', data?.length || 0);
         console.log('📊 [REPRESENTATIVES DEBUG] Dados dos representantes:', data);
 
-        return data?.map(rep => ({
+        const representatives = data?.map(rep => ({
           ...rep,
           status: rep.status as 'ativo' | 'inativo',
           tipo: rep.tipo as 'representante' | 'broker',
           link_whatsapp: rep.link_whatsapp || generateWhatsAppLink(rep.telefone)
         })) || [];
+
+        // Ordenar: ativos primeiro, depois inativos, mantendo ordem de criação dentro de cada grupo
+        const sortedRepresentatives = representatives.sort((a, b) => {
+          // Se status for diferente, ativos vêm primeiro
+          if (a.status !== b.status) {
+            return a.status === 'ativo' ? -1 : 1;
+          }
+          // Se status for igual, manter ordem por data de criação (mais recente primeiro)
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+        
+        console.log('🔍 [REPRESENTATIVES DEBUG] Representantes processados e ordenados:', sortedRepresentatives.length);
+        console.log('🔍 [REPRESENTATIVES DEBUG] Primeiros 3 representantes:', sortedRepresentatives.slice(0, 3));
+        
+        return sortedRepresentatives;
       } catch (error) {
         console.error('Erro na query de representantes:', error);
         throw error;
@@ -121,7 +137,7 @@ export function useComercialRepresentatives() {
           nome_completo: data.nome_completo,
           telefone: data.telefone,
           escritorio: data.escritorio,
-          cidades_atendidas: data.cidades_atendidas,
+          cidades_atendidas: data.cidades_atendidas.split(',').map(city => city.trim()).filter(city => city.length > 0),
           estado: data.estado || null,
           tipo: data.tipo,
           status: data.status,
@@ -181,7 +197,7 @@ export function useComercialRepresentatives() {
           nome_completo: data.nome_completo,
           telefone: data.telefone,
           escritorio: data.escritorio,
-          cidades_atendidas: data.cidades_atendidas,
+          cidades_atendidas: data.cidades_atendidas ? data.cidades_atendidas.split(',').map(city => city.trim()).filter(city => city.length > 0) : undefined,
           estado: data.estado || null,
           tipo: data.tipo,
           status: data.status,

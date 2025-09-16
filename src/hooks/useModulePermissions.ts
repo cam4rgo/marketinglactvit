@@ -90,8 +90,14 @@ export const useUserModuleAccess = () => {
   return useQuery({
     queryKey: ['user-module-access'],
     queryFn: async () => {
+      console.log('🔐 [MODULE ACCESS DEBUG] Verificando acesso aos módulos...');
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return {};
+      if (!user.user) {
+        console.log('🔐 [MODULE ACCESS DEBUG] Usuário não autenticado');
+        return {};
+      }
+
+      console.log('🔐 [MODULE ACCESS DEBUG] Usuário autenticado:', user.user.id);
 
       // Pega o role do usuário
       const { data: userRole } = await supabase
@@ -100,10 +106,16 @@ export const useUserModuleAccess = () => {
         .eq('user_id', user.user.id)
         .single();
 
-      if (!userRole) return {};
+      console.log('🔐 [MODULE ACCESS DEBUG] Role do usuário:', userRole);
+
+      if (!userRole) {
+        console.log('🔐 [MODULE ACCESS DEBUG] Usuário sem role definido');
+        return {};
+      }
 
       // Se for admin, tem acesso a tudo
       if (userRole.role === 'admin') {
+        console.log('🔐 [MODULE ACCESS DEBUG] Usuário é admin - acesso total');
         return {
           dashboard: true,
           financial: true,
@@ -117,19 +129,29 @@ export const useUserModuleAccess = () => {
         };
       }
 
+      console.log('🔐 [MODULE ACCESS DEBUG] Buscando permissões específicas para role:', userRole.role);
+
       // Busca permissões específicas do role
       const { data: permissions } = await supabase
         .from('module_permissions')
         .select('module_name, can_access')
         .eq('role', userRole.role);
 
-      if (!permissions) return {};
+      console.log('🔐 [MODULE ACCESS DEBUG] Permissões encontradas:', permissions);
+
+      if (!permissions) {
+        console.log('🔐 [MODULE ACCESS DEBUG] Nenhuma permissão encontrada');
+        return {};
+      }
 
       // Converte array em objeto
       const moduleAccess: Record<string, boolean> = {};
       permissions.forEach(permission => {
         moduleAccess[permission.module_name] = permission.can_access;
       });
+
+      console.log('🔐 [MODULE ACCESS DEBUG] Acesso final aos módulos:', moduleAccess);
+      console.log('🔐 [MODULE ACCESS DEBUG] Acesso ao módulo comercial:', moduleAccess.comercial);
 
       return moduleAccess;
     },

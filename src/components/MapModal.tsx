@@ -1,52 +1,27 @@
-import React from 'react';
+import React, { useMemo, useState, memo } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon, LatLngExpression } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { X, MapPin, Phone, Users } from 'lucide-react';
 import { useMapData, MapPin as MapPinType } from '@/hooks/useMapData';
-import { ComercialRepresentative } from '@/hooks/useComercialRepresentatives';
+import { ComercialRepresentative } from '@/types/comercial';
+import { Progress } from '@/components/ui/progress';
 
 interface MapModalProps {
   isOpen: boolean;
   onClose: () => void;
+  representatives?: ComercialRepresentative[];
 }
 
-// Função para criar ícones com logs de debug
-function createMapIcons() {
-  console.log('🗺️ Criando ícones do mapa...');
-  
-  const representativeIcon = new Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-  });
-
-  const brokerIcon = new Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-  });
-
-  console.log('🗺️ Ícones criados com sucesso:', { representativeIcon, brokerIcon });
-  
-  // Testar se as imagens carregam
-  const testImg1 = new Image();
-  testImg1.onload = () => console.log('✅ Ícone azul carregado com sucesso');
-  testImg1.onerror = () => console.error('❌ Erro ao carregar ícone azul');
-  testImg1.src = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png';
-  
-  const testImg2 = new Image();
-  testImg2.onload = () => console.log('✅ Ícone verde carregado com sucesso');
-  testImg2.onerror = () => console.error('❌ Erro ao carregar ícone verde');
-  testImg2.src = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png';
-  
-  return { representativeIcon, brokerIcon };
-}
+// Ícones otimizados com configuração estática
+const ICON_CONFIG = {
+  iconSize: [25, 41] as [number, number],
+  iconAnchor: [12, 41] as [number, number],
+  popupAnchor: [1, -34] as [number, number],
+  shadowSize: [41, 41] as [number, number],
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png'
+};
 
 function RepresentativeCard({ representative }: { representative: ComercialRepresentative }) {
   return (
@@ -81,9 +56,45 @@ function RepresentativeCard({ representative }: { representative: ComercialRepre
   );
 }
 
+// Memoizar o componente para evitar re-renders desnecessários
+export default memo(MapModal, (prevProps, nextProps) => {
+  // Comparar se as props realmente mudaram
+  if (prevProps.isOpen !== nextProps.isOpen) return false;
+  if (prevProps.onClose !== nextProps.onClose) return false;
+  
+  // Comparação profunda dos representantes
+  if (prevProps.representatives.length !== nextProps.representatives.length) return false;
+  
+  for (let i = 0; i < prevProps.representatives.length; i++) {
+    const prev = prevProps.representatives[i];
+    const next = nextProps.representatives[i];
+    
+    if (prev.id !== next.id || 
+        prev.nome_completo !== next.nome_completo ||
+        prev.status !== next.status ||
+        prev.cidades_atendidas.join(',') !== next.cidades_atendidas.join(',')) {
+      return false;
+    }
+  }
+  
+  return true; // Props são iguais, não re-renderizar
+});
+
 function MapPinPopup({ pin }: { pin: MapPinType }) {
-  const brokers = pin.representatives.filter(rep => rep.tipo === 'broker');
-  const representatives = pin.representatives.filter(rep => rep.tipo === 'representante');
+  const activeRepresentatives = useMemo(() => 
+    pin.representatives.filter(rep => {
+      const isActive = rep.status === 'ativo' || rep.status === true || rep.status === 'true' || rep.ativo === true;
+      return isActive;
+    }), [pin.representatives]
+  );
+  
+  const brokers = useMemo(() => 
+    activeRepresentatives.filter(rep => rep.tipo === 'broker'), [activeRepresentatives]
+  );
+  
+  const representatives = useMemo(() => 
+    activeRepresentatives.filter(rep => rep.tipo === 'representante'), [activeRepresentatives]
+  );
   
   return (
     <div className="min-w-[300px] max-w-[400px]">
@@ -124,17 +135,59 @@ function MapPinPopup({ pin }: { pin: MapPinType }) {
   );
 }
 
-export function MapModal({ isOpen, onClose }: MapModalProps) {
-  const { mapPins, isLoading, loadingProgress } = useMapData();
+function MapModal({ isOpen, onClose, representatives }: MapModalProps) {
+  console.log('🗺️ [MapModal] Componente renderizado, isOpen:', isOpen);
   
-  // Criar ícones quando o componente renderizar
-  const { representativeIcon, brokerIcon } = createMapIcons();
+  // Estabilizar referência dos representantes para evitar reinicializações do hook
+  const stableRepresentatives = useMemo(() => {
+    return representatives || [];
+  }, [representatives]);
   
-  // Debug logs detalhados
-  console.log('🗺️ MapModal - isOpen:', isOpen);
-  console.log('🗺️ MapModal - isLoading:', isLoading);
-  console.log('🗺️ MapModal - mapPins:', mapPins);
-  console.log('🗺️ MapModal - mapPins.length:', mapPins.length);
+  // Sempre executar useMapData, mas só processar quando necessário
+  const { mapPins, isLoading, progress } = useMapData(stableRepresentatives);
+  const [openPopupId, setOpenPopupId] = useState<string | null>(null);
+  
+  console.log('🗺️ [MapModal] Dados do mapa:', { mapPins: mapPins.length, isLoading, progress });
+  console.log('🗺️ [MapModal] Modal aberto:', isOpen, 'Pins disponíveis:', mapPins.length > 0 ? 'SIM' : 'NÃO');
+  
+  // Criar ícones otimizados com useMemo
+  const mapIcons = useMemo(() => {
+    const representativeIcon = new Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+      ...ICON_CONFIG
+    });
+
+    const brokerIcon = new Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      ...ICON_CONFIG
+    });
+
+    const mixedIcon = new Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+      ...ICON_CONFIG
+    });
+
+    return { representativeIcon, brokerIcon, mixedIcon };
+  }, []);
+  
+  // Filtrar pins ativos com useMemo para otimização
+  const activePins = useMemo(() => {
+    return mapPins.filter(pin => {
+      // Verificar se há representantes ativos (normalizar diferentes formatos de status)
+      const hasActiveRepresentatives = pin.representatives.some(rep => {
+        const isActive = rep.status === 'ativo' || rep.status === true || rep.status === 'true' || rep.ativo === true;
+        return isActive;
+      });
+      
+      const isValidCoordinate = (coord: number) => 
+        !isNaN(coord) && isFinite(coord) && coord !== null && coord !== undefined;
+      const isValidPosition = isValidCoordinate(pin.latitude) && isValidCoordinate(pin.longitude);
+      
+
+      
+      return hasActiveRepresentatives && isValidPosition;
+    });
+  }, [mapPins]);
   
   if (!isOpen) return null;
   
@@ -153,7 +206,24 @@ export function MapModal({ isOpen, onClose }: MapModalProps) {
       <div className="relative bg-white rounded-lg shadow-xl w-[90vw] h-[80vh] max-w-6xl">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Mapa de Representantes</h2>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-bold text-gray-900">Mapa de Representantes</h2>
+            {/* Legenda de cores */}
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-gray-600">Representantes</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-gray-600">Brokers</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                <span className="text-gray-600">Misto</span>
+              </div>
+            </div>
+          </div>
           <button
             onClick={onClose}
             className="p-2 text-gray-600 hover:text-white hover:bg-red-500 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
@@ -170,25 +240,25 @@ export function MapModal({ isOpen, onClose }: MapModalProps) {
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Carregando Localizações</h3>
                 
-                {loadingProgress.total > 0 && (
+                {progress.total > 0 && (
                   <div className="space-y-3">
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
                         className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-                        style={{ width: `${(loadingProgress.current / loadingProgress.total) * 100}%` }}
+                        style={{ width: `${(progress.current / progress.total) * 100}%` }}
                       ></div>
                     </div>
                     <div className="flex justify-between text-sm text-gray-600">
                       <span>Processando cidades...</span>
-                      <span>{loadingProgress.current}/{loadingProgress.total}</span>
+                      <span>{progress.current}/{progress.total}</span>
                     </div>
                     <p className="text-xs text-gray-500">
-                      {Math.round((loadingProgress.current / loadingProgress.total) * 100)}% concluído
+                      {Math.round((progress.current / progress.total) * 100)}% concluído
                     </p>
                   </div>
                 )}
                 
-                {loadingProgress.total === 0 && (
+                {progress.total === 0 && (
                   <p className="text-gray-600">Preparando geocodificação...</p>
                 )}
               </div>
@@ -226,56 +296,49 @@ export function MapModal({ isOpen, onClose }: MapModalProps) {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             
-            {mapPins.map((pin, index) => {
-              const hasBrokers = pin.representatives.some(rep => rep.tipo === 'broker');
-              const icon = hasBrokers ? brokerIcon : representativeIcon;
-              
-              // Validar coordenadas
-              const isValidCoordinate = (coord: number) => 
-                !isNaN(coord) && isFinite(coord) && coord !== null && coord !== undefined;
-              
-              const isValidPosition = isValidCoordinate(pin.latitude) && isValidCoordinate(pin.longitude);
-              
-              // Debug log detalhado para cada pin
-              console.log(`🗺️ [PIN ${index + 1}] Renderizando pin:`, {
-                id: pin.id,
-                city: pin.city,
-                state: pin.state,
-                latitude: pin.latitude,
-                longitude: pin.longitude,
-                representatives: pin.representatives.length,
-                hasBrokers,
-                isValidPosition,
-                icon: icon ? 'OK' : 'ERRO',
-                iconUrl: icon?.options?.iconUrl,
-                position: [pin.latitude, pin.longitude]
-              });
-              
-              // Não renderizar se coordenadas inválidas
-              if (!isValidPosition) {
-                console.error(`❌ [PIN ${index + 1}] Coordenadas inválidas:`, {
-                  latitude: pin.latitude,
-                  longitude: pin.longitude
+            {activePins.map((pin) => {
+                // Filtrar representantes ativos
+                const activeReps = pin.representatives.filter(rep => {
+                  const isActive = rep.status === 'ativo' || rep.status === true || rep.status === 'true' || rep.ativo === true;
+                  return isActive;
                 });
-                return null;
-              }
-              
-              return (
-                <Marker
-                  key={pin.id}
-                  position={[pin.latitude, pin.longitude]}
-                  icon={icon}
-                  eventHandlers={{
-                    add: () => console.log(`✅ [PIN ${index + 1}] Marker adicionado ao mapa:`, pin.city),
-                    remove: () => console.log(`❌ [PIN ${index + 1}] Marker removido do mapa:`, pin.city)
-                  }}
-                >
-                  <Popup maxWidth={400} className="custom-popup">
-                    <MapPinPopup pin={pin} />
-                  </Popup>
-                </Marker>
-              );
-            })}
+                
+                // Contar tipos ativos
+                const activeBrokers = activeReps.filter(rep => rep.tipo === 'broker');
+                const activeRepresentatives = activeReps.filter(rep => rep.tipo === 'representante');
+                
+                // Determinar ícone baseado na composição
+                let icon;
+                if (activeBrokers.length > 0 && activeRepresentatives.length > 0) {
+                  // Localização mista: tem tanto brokers quanto representantes
+                  icon = mapIcons.mixedIcon;
+                } else if (activeBrokers.length > 0) {
+                  // Apenas brokers
+                  icon = mapIcons.brokerIcon;
+                } else {
+                  // Apenas representantes (ou tipo não especificado)
+                  icon = mapIcons.representativeIcon;
+                }
+                
+                return (
+                  <Marker
+                    key={pin.id}
+                    position={[pin.latitude, pin.longitude]}
+                    icon={icon}
+                    eventHandlers={{
+                      click: () => setOpenPopupId(pin.id)
+                    }}
+                  >
+                    <Popup 
+                      maxWidth={400} 
+                      className="custom-popup"
+                      onClose={() => setOpenPopupId(null)}
+                    >
+                      {openPopupId === pin.id && <MapPinPopup pin={pin} />}
+                    </Popup>
+                  </Marker>
+                );
+              })}
           </MapContainer>
         </div>
       </div>
