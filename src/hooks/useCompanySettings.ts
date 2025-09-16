@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export interface CompanySettings {
   id: string;
@@ -35,7 +35,7 @@ export const useCompanySettings = () => {
 
 export const useUpdateCompanySettings = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async (updates: Partial<CompanySettings>) => {
@@ -94,18 +94,11 @@ export const useUpdateCompanySettings = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company-settings'] });
-      toast({
-        title: "Configurações salvas",
-        description: "As configurações da empresa foram salvas com sucesso.",
-      });
+      toast.success('As configurações da empresa foram salvas com sucesso.');
     },
     onError: (error) => {
       console.error('Update company settings error:', error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar as configurações.",
-        variant: "destructive",
-      });
+      toast.error('Não foi possível salvar as configurações.');
     },
   });
 };

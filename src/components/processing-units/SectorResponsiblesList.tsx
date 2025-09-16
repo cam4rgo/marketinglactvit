@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Copy, Check } from 'lucide-react';
 import { SectorResponsible } from '@/types/processing-units';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { generateWhatsAppLink, formatPhoneNumber } from '@/lib/utils';
 
 interface SectorResponsiblesListProps {
@@ -20,24 +20,17 @@ export const SectorResponsiblesList: React.FC<SectorResponsiblesListProps> = ({
   isDeleting,
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const { toast } = useToast();
+  // Using sonner toast
 
   const copyWhatsAppLink = async (whatsapp: string, id: string) => {
     try {
       const whatsappLink = generateWhatsAppLink(whatsapp);
       await navigator.clipboard.writeText(whatsappLink);
       setCopiedId(id);
-      toast({
-        title: "Link copiado!",
-        description: "O link do WhatsApp foi copiado para a área de transferência.",
-      });
+      toast.success('O link do WhatsApp foi copiado para a área de transferência.');
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
-      toast({
-        title: "Erro ao copiar",
-        description: "Não foi possível copiar o link.",
-        variant: "destructive",
-      });
+      toast.error('Não foi possível copiar o link.');
     }
   };
 

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   type MetaCampaign, 
   type MetaCampaignInsights, 
@@ -62,7 +62,7 @@ export const CampaignExporter: React.FC<CampaignExporterProps> = ({
   selectedMetrics,
   className = ''
 }) => {
-  const { toast } = useToast();
+  // Using sonner toast
   const [isOpen, setIsOpen] = useState(false);
   const [campaignIds, setCampaignIds] = useState<string[]>([]);
   const [exportFormat, setExportFormat] = useState<'pdf' | 'excel'>('pdf');
@@ -433,17 +433,10 @@ export const CampaignExporter: React.FC<CampaignExporterProps> = ({
         reportTitle: 'Relatório de Campanhas Meta Ads'
       });
       
-      toast({
-        title: 'Relatório exportado!',
-        description: 'O arquivo PDF foi baixado com sucesso.'
-      });
+      toast.success('O arquivo PDF foi baixado com sucesso.');
     } catch (error) {
       console.error('Erro ao exportar PDF:', error);
-      toast({
-        title: 'Erro na exportação',
-        description: 'Não foi possível gerar o relatório PDF.',
-        variant: 'destructive'
-      });
+      toast.error('Não foi possível gerar o relatório PDF.');
     } finally {
       setIsExporting(false);
     }
@@ -463,17 +456,10 @@ export const CampaignExporter: React.FC<CampaignExporterProps> = ({
         companyName: 'Marketing Lactvit'
       });
       
-      toast({
-        title: 'Relatório exportado!',
-        description: 'O arquivo Excel foi baixado com sucesso.'
-      });
+      toast.success('O arquivo Excel foi baixado com sucesso.');
     } catch (error) {
       console.error('Erro ao exportar Excel:', error);
-      toast({
-        title: 'Erro na exportação',
-        description: 'Não foi possível gerar o relatório Excel.',
-        variant: 'destructive'
-      });
+      toast.error('Não foi possível gerar o relatório Excel.');
     } finally {
       setIsExporting(false);
     }

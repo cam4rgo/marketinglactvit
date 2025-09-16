@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { AlertCircle, CheckCircle, Loader2, Eye, EyeOff, TestTube, Shield } from 'lucide-react';
 import { useCreateIntegration, useUpdateIntegration, type ApiIntegration } from '@/hooks/useApiIntegrations';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface MetaAdsIntegrationProps {
@@ -41,15 +41,11 @@ export const MetaAdsIntegration: React.FC<MetaAdsIntegrationProps> = ({ integrat
   
   const createMutation = useCreateIntegration();
   const updateMutation = useUpdateIntegration();
-  const { toast } = useToast();
+  // Using sonner toast
 
   const handleSave = async () => {
     if (!appId.trim() || !appSecret.trim() || !accessToken.trim() || !accountId.trim()) {
-      toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios: App ID, App Secret, Access Token e Account ID.",
-        variant: "destructive",
-      });
+      toast.error('Por favor, preencha todos os campos obrigatórios: App ID, App Secret, Access Token e Account ID.');
       return;
     }
 
@@ -84,11 +80,7 @@ export const MetaAdsIntegration: React.FC<MetaAdsIntegrationProps> = ({ integrat
 
   const handleTest = async () => {
     if (!appId.trim() || !appSecret.trim()) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira o App ID e App Secret para testar.",
-        variant: "destructive",
-      });
+      toast.error('Por favor, insira o App ID e App Secret para testar.');
       return;
     }
 
@@ -98,13 +90,11 @@ export const MetaAdsIntegration: React.FC<MetaAdsIntegrationProps> = ({ integrat
     setTimeout(() => {
       const isValid = appId.length > 5 && appSecret.length > 10;
       
-      toast({
-        title: isValid ? "Teste bem-sucedido" : "Teste falhou",
-        description: isValid 
-          ? "As credenciais da Meta API estão válidas e a conexão foi estabelecida."
-          : "Não foi possível conectar com a Meta API. Verifique suas credenciais.",
-        variant: isValid ? "default" : "destructive",
-      });
+      if (isValid) {
+        toast.success('As credenciais da Meta API estão válidas e a conexão foi estabelecida.');
+      } else {
+        toast.error('Não foi possível conectar com a Meta API. Verifique suas credenciais.');
+      }
       
       setIsTesting(false);
     }, 3000);
@@ -112,11 +102,7 @@ export const MetaAdsIntegration: React.FC<MetaAdsIntegrationProps> = ({ integrat
 
   const handleValidate = async () => {
     if (!appId.trim() || !appSecret.trim()) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira o App ID e App Secret para validar.",
-        variant: "destructive",
-      });
+      toast.error('Por favor, insira o App ID e App Secret para validar.');
       return;
     }
 
@@ -142,13 +128,11 @@ export const MetaAdsIntegration: React.FC<MetaAdsIntegrationProps> = ({ integrat
           });
         }
 
-        toast({
-          title: isValid ? "Validação bem-sucedida" : "Validação falhou",
-          description: isValid 
-            ? "A integração com a Meta API foi validada e está ativa."
-            : "As credenciais fornecidas não são válidas ou o app não tem as permissões necessárias.",
-          variant: isValid ? "default" : "destructive",
-        });
+        if (isValid) {
+          toast.success('A integração com a Meta API foi validada e está ativa.');
+        } else {
+          toast.error('As credenciais fornecidas não são válidas ou o app não tem as permissões necessárias.');
+        }
       } catch (error) {
         console.error('Error validating integration:', error);
       } finally {

@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useFinancialCategories, useCreateCategory, useDeleteCategory, type Category } from '@/hooks/useFinancialCategories';
+import { useConfirm } from '@/hooks/use-confirm';
 import { toast } from 'sonner';
 import { Plus, Trash2, FileText } from 'lucide-react';
 
@@ -21,6 +21,7 @@ export const CategoryManager: React.FC = () => {
   const { data: categories, isLoading } = useFinancialCategories();
   const createCategory = useCreateCategory();
   const deleteCategory = useDeleteCategory();
+  const { confirm } = useConfirm();
 
   const [showForm, setShowForm] = useState(false);
   const [newCategory, setNewCategory] = useState({
@@ -42,13 +43,21 @@ export const CategoryManager: React.FC = () => {
     });
   };
 
-  const handleDeleteCategory = (categoryId: string) => {
+  const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
     if (categories && categories.length <= 1) {
       toast.error('Você deve manter pelo menos uma categoria');
       return;
     }
     
-    deleteCategory.mutate(categoryId);
+    const confirmed = await confirm({
+      title: "Excluir categoria",
+      description: `Tem certeza que deseja excluir a categoria "${categoryName}"? Esta ação não pode ser desfeita.`,
+      variant: "destructive"
+    });
+    
+    if (confirmed) {
+      deleteCategory.mutate(categoryId);
+    }
   };
 
   if (isLoading) {
@@ -148,38 +157,16 @@ export const CategoryManager: React.FC = () => {
                 </Badge>
               </div>
               
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={categories && categories.length <= 1}
-                    className="text-white hover:opacity-90"
-                    style={{ backgroundColor: '#EF4343' }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir categoria</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Tem certeza que deseja excluir a categoria "{category.name}"? 
-                      Esta ação não pode ser desfeita.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={() => handleDeleteCategory(category.id)}
-                      className="text-white hover:opacity-90"
-                      style={{ backgroundColor: '#EF4343' }}
-                    >
-                      Excluir
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={categories && categories.length <= 1}
+                className="text-white hover:opacity-90"
+                style={{ backgroundColor: '#EF4343' }}
+                onClick={() => handleDeleteCategory(category.id, category.name)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             </div>
           ))}
         </div>

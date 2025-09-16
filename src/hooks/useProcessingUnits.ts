@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import type { ProcessingUnit, CreateProcessingUnitData, UpdateProcessingUnitData } from '@/types/processing-units';
 
 export function useProcessingUnits() {
-  const { toast } = useToast();
+  // Using sonner toast
   const queryClient = useQueryClient();
 
   // Query para buscar todas as unidades de processamento
@@ -105,17 +105,10 @@ export function useProcessingUnits() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['processing-units'] });
-      toast({
-        title: 'Sucesso',
-        description: 'Unidade de processamento criada com sucesso!',
-      });
+      toast.success('Unidade de processamento criada com sucesso!');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     },
   });
 
@@ -183,17 +176,10 @@ export function useProcessingUnits() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['processing-units'] });
-      toast({
-        title: 'Sucesso',
-        description: 'Unidade de processamento atualizada com sucesso!',
-      });
+      toast.success('Unidade de processamento atualizada com sucesso!');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     },
   });
 
@@ -227,17 +213,10 @@ export function useProcessingUnits() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['processing-units'] });
-      toast({
-        title: 'Sucesso',
-        description: 'Unidade de processamento deletada com sucesso!',
-      });
+      toast.success('Unidade de processamento deletada com sucesso!');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     },
   });
 

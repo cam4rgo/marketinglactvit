@@ -27,9 +27,11 @@ import { PostPreview } from "@/components/approvals/PostPreview";
 import { CompanyProfileSettings } from "@/components/approvals/CompanyProfileSettings";
 import { useOptimizedApprovalPosts, useApprovalPostsStats } from "@/hooks/useOptimizedApprovalPosts";
 import { useUpdateApprovalPost, useDeleteApprovalPost } from "@/hooks/useApprovalPosts";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { EditPostForm } from "@/components/approvals/EditPostForm";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useConfirm } from "@/hooks/use-confirm";
 
 // Definir o tipo PostCardProps
 interface PostCardProps {
@@ -47,6 +49,7 @@ export default function Approvals() {
   const [activeTab, setActiveTab] = useState("pending");
   const [previewPost, setPreviewPost] = useState<any>(null);
   const queryClient = useQueryClient();
+  const { confirm: confirmAction, confirmState } = useConfirm();
   
   // Use the optimized hooks for better performance and working queries
   const { data, isLoading, error, refetch } = useOptimizedApprovalPosts({ 
@@ -57,7 +60,7 @@ export default function Approvals() {
   const { data: statsData, refetch: refetchStats } = useApprovalPostsStats();
   const updateMutation = useUpdateApprovalPost();
   const deleteMutation = useDeleteApprovalPost();
-  const { toast } = useToast();
+  // Using sonner toast
 
   const invalidateQueries = () => {
     queryClient.invalidateQueries({ queryKey: ['approval-posts-optimized'] });
@@ -71,18 +74,11 @@ export default function Approvals() {
         status: 'approved' as const,
         approved_at: new Date().toISOString(),
       });
-      toast({
-        title: "Post aprovado",
-        description: "O post foi aprovado com sucesso.",
-      });
+      toast.success("O post foi aprovado com sucesso.");
       invalidateQueries();
     } catch (error) {
       console.error('Error approving post:', error);
-      toast({
-        title: "Erro ao aprovar",
-        description: "Não foi possível aprovar o post.",
-        variant: "destructive",
-      });
+      toast.error("Não foi possível aprovar o post.");
     }
   };
 
@@ -93,39 +89,32 @@ export default function Approvals() {
         status: 'rejected' as const,
         rejection_reason: rejectionReason || undefined,
       });
-      toast({
-        title: "Post rejeitado",
-        description: "O post foi rejeitado.",
-        variant: "destructive",
-      });
+      toast.error("O post foi rejeitado.");
       invalidateQueries();
     } catch (error) {
       console.error('Error rejecting post:', error);
-      toast({
-        title: "Erro ao rejeitar",
-        description: "Não foi possível rejeitar o post.",
-        variant: "destructive",
-      });
+      toast.error("Não foi possível rejeitar o post.");
     }
   };
 
   const handleDelete = async (postId: string) => {
-    if (window.confirm('Tem certeza que deseja excluir esta solicitação? Esta ação não pode ser desfeita.')) {
+    const confirmed = await confirmAction({
+      title: "Excluir Solicitação",
+      description: "Tem certeza que deseja excluir esta solicitação? Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      cancelText: "Cancelar",
+      variant: "destructive"
+    });
+    
+    if (confirmed) {
       try {
         console.log('Deleting post with ID:', postId);
         await deleteMutation.mutateAsync(postId);
-        toast({
-          title: "Post excluído",
-          description: "A solicitação foi excluída com sucesso.",
-        });
+        toast.success("A solicitação foi excluída com sucesso.");
         invalidateQueries();
       } catch (error) {
         console.error('Error deleting post:', error);
-        toast({
-          title: "Erro ao excluir",
-          description: "Não foi possível excluir o post.",
-          variant: "destructive",
-        });
+        toast.error("Não foi possível excluir o post.");
       }
     }
   };
@@ -587,10 +576,7 @@ export default function Approvals() {
             <CreatePostForm 
               onSuccess={() => {
                 setShowCreateForm(false);
-                toast({
-                  title: "Post criado com sucesso!",
-                  description: "Seu post foi enviado para aprovação.",
-                });
+                toast.success("Seu post foi enviado para aprovação.");
               }}
             />
           </DialogContent>
@@ -617,10 +603,7 @@ export default function Approvals() {
                  setShowEditForm(false);
                  setEditingPost(null);
                  invalidateQueries();
-                 toast({
-                   title: "Post editado",
-                   description: "O post foi editado e reenviado para aprovação.",
-                 });
+                 toast.success("O post foi editado e reenviado para aprovação.");
                }}
              />
           </DialogContent>
@@ -650,6 +633,19 @@ export default function Approvals() {
           </DialogContent>
         </Dialog>
       )}
+      
+      {/* Dialog de Confirmação */}
+      <ConfirmDialog
+        open={confirmState.open}
+        onOpenChange={confirmState.onOpenChange}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        variant={confirmState.variant}
+        onConfirm={confirmState.onConfirm}
+        onCancel={confirmState.onCancel}
+      />
      </main>
    );
 }

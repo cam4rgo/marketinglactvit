@@ -8,13 +8,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, User, Instagram } from 'lucide-react';
 import { useCompanyProfile, useCreateCompanyProfile, useUpdateCompanyProfile } from '@/hooks/useCompanyProfile';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const CompanyProfileSettings = () => {
   const { profile, isLoading, refetch } = useCompanyProfile();
   const createMutation = useCreateCompanyProfile();
   const updateMutation = useUpdateCompanyProfile();
-  const { toast } = useToast();
+  // Using sonner toast
 
   const [formData, setFormData] = useState({
     company_name: '',
@@ -49,21 +49,13 @@ export const CompanyProfileSettings = () => {
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "Arquivo muito grande",
-        description: "A imagem deve ter no máximo 5MB.",
-        variant: "destructive",
-      });
+      toast.error('A imagem deve ter no máximo 5MB.');
       return;
     }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Formato inválido",
-        description: "Por favor, selecione uma imagem válida.",
-        variant: "destructive",
-      });
+      toast.error('Por favor, selecione uma imagem válida.');
       return;
     }
 
@@ -104,20 +96,12 @@ export const CompanyProfileSettings = () => {
 
     // Basic validation
     if (!formData.company_name.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "Nome da empresa é obrigatório.",
-        variant: "destructive",
-      });
+      toast.error('Nome da empresa é obrigatório.');
       return;
     }
 
     if (!formData.instagram_username.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "Nome de usuário do Instagram é obrigatório.",
-        variant: "destructive",
-      });
+      toast.error('Nome de usuário do Instagram é obrigatório.');
       return;
     }
 
@@ -159,11 +143,7 @@ export const CompanyProfileSettings = () => {
       setProfileImageFile(null);
     } catch (error) {
       console.error('Error saving profile:', error);
-      toast({
-        title: "Erro ao salvar",
-        description: error instanceof Error ? error.message : "Não foi possível salvar o perfil. Tente novamente.",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar o perfil. Tente novamente.');
     }
   };
 

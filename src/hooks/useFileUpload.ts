@@ -1,11 +1,11 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 
 export const useFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
-  const { toast } = useToast();
+  // Using sonner toast
 
   const uploadFile = async (file: File, bucket: string, path?: string): Promise<string> => {
     if (!file) {
@@ -54,11 +54,7 @@ export const useFileUpload = () => {
       return publicUrl;
     } catch (error) {
       console.error('Error uploading file:', error);
-      toast({
-        title: "Erro no upload",
-        description: error instanceof Error ? error.message : "Não foi possível fazer upload do arquivo.",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Não foi possível fazer upload do arquivo.");
       throw error;
     } finally {
       setIsUploading(false);

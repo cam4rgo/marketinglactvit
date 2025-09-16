@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Copy, Check } from 'lucide-react';
 import { ComercialRepresentative } from '@/hooks/useComercialRepresentatives';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { generateWhatsAppLink, formatPhoneNumber } from '@/lib/utils';
 
 interface RepresentativesListProps {
@@ -24,24 +24,17 @@ export const RepresentativesList: React.FC<RepresentativesListProps> = ({
   isDeleting,
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const { toast } = useToast();
+  // Using sonner toast
 
   const copyWhatsAppLink = async (telefone: string, id: string) => {
     try {
       const whatsappLink = generateWhatsAppLink(telefone);
       await navigator.clipboard.writeText(whatsappLink);
       setCopiedId(id);
-      toast({
-        title: "Link copiado!",
-        description: "O link do WhatsApp foi copiado para a área de transferência.",
-      });
+      toast.success("O link do WhatsApp foi copiado para a área de transferência.");
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
-      toast({
-        title: "Erro ao copiar",
-        description: "Não foi possível copiar o link.",
-        variant: "destructive",
-      });
+      toast.error("Não foi possível copiar o link.");
     }
   };
 

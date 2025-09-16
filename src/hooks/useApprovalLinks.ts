@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 
 export const useApprovalLinks = (postId?: string) => {
   return useQuery({
@@ -25,7 +25,7 @@ export const useApprovalLinks = (postId?: string) => {
 
 export const useCreateApprovalLink = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async (postId: string) => {
@@ -58,17 +58,10 @@ export const useCreateApprovalLink = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['approval-links'] });
-      toast({
-        title: "Link criado",
-        description: "Link de aprovação criado com sucesso.",
-      });
+      toast.success("Link de aprovação criado com sucesso.");
     },
     onError: (error) => {
-      toast({
-        title: "Erro ao criar link",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 };
@@ -123,7 +116,7 @@ export const usePublicApprovalPost = (token: string) => {
 };
 
 export const usePublicApprovalAction = () => {
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({ 
@@ -153,17 +146,10 @@ export const usePublicApprovalAction = () => {
     },
     onSuccess: (_, variables) => {
       const actionText = variables.action === 'approved' ? 'aprovado' : 'rejeitado';
-      toast({
-        title: `Post ${actionText}`,
-        description: `O post foi ${actionText} com sucesso.`,
-      });
+      toast.success(`O post foi ${actionText} com sucesso.`);
     },
     onError: (error) => {
-      toast({
-        title: "Erro ao processar solicitação",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 };

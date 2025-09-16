@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 
 export interface CompanyProfile {
   id: string;
@@ -50,7 +50,7 @@ export const useCompanyProfile = () => {
 
 export const useCreateCompanyProfile = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async (data: Omit<CompanyProfile, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
@@ -86,25 +86,18 @@ export const useCreateCompanyProfile = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company-profile'] });
-      toast({
-        title: "Perfil criado",
-        description: "Perfil da empresa foi criado com sucesso.",
-      });
+      toast.success("Perfil da empresa foi criado com sucesso.");
     },
     onError: (error) => {
       console.error('Create company profile error:', error);
-      toast({
-        title: "Erro ao criar perfil",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 };
 
 export const useUpdateCompanyProfile = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Partial<CompanyProfile>) => {
@@ -147,18 +140,11 @@ export const useUpdateCompanyProfile = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company-profile'] });
-      toast({
-        title: "Perfil atualizado",
-        description: "As alterações foram salvas com sucesso.",
-      });
+      toast.success("As alterações foram salvas com sucesso.");
     },
     onError: (error) => {
       console.error('Update company profile error:', error);
-      toast({
-        title: "Erro ao atualizar perfil",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 };

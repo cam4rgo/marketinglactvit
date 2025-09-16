@@ -10,6 +10,8 @@ import { ProcessingUnitForm } from '@/components/processing-units/ProcessingUnit
 import { ProcessingUnitsList } from '@/components/processing-units/ProcessingUnitsList';
 import { SectorResponsibleForm } from '@/components/processing-units/SectorResponsibleForm';
 import { SectorResponsiblesList } from '@/components/processing-units/SectorResponsiblesList';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/hooks/use-confirm';
 import type { ProcessingUnit, SectorResponsible } from '@/types/processing-units';
 
 export default function ProcessingUnits() {
@@ -22,6 +24,7 @@ export default function ProcessingUnits() {
   const [responsiblesSearchTerm, setResponsiblesSearchTerm] = React.useState('');
   const [debouncedUnitsSearchTerm, setDebouncedUnitsSearchTerm] = React.useState('');
   const [debouncedResponsiblesSearchTerm, setDebouncedResponsiblesSearchTerm] = React.useState('');
+  const { confirm: confirmAction, confirmState } = useConfirm();
 
   // Debounce search terms
   React.useEffect(() => {
@@ -122,8 +125,16 @@ export default function ProcessingUnits() {
     setEditingUnit(undefined);
   };
 
-  const handleDeleteUnit = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta unidade?')) {
+  const handleDeleteUnit = async (id: string) => {
+    const confirmed = await confirmAction({
+      title: 'Excluir Unidade',
+      description: 'Tem certeza que deseja excluir esta unidade? Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      cancelText: 'Cancelar',
+      variant: 'destructive'
+    });
+    
+    if (confirmed) {
       deleteUnit(id);
     }
   };
@@ -153,8 +164,16 @@ export default function ProcessingUnits() {
     setEditingResponsible(undefined);
   };
 
-  const handleDeleteResponsible = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este responsável?')) {
+  const handleDeleteResponsible = async (id: string) => {
+    const confirmed = await confirmAction({
+      title: 'Excluir Responsável',
+      description: 'Tem certeza que deseja excluir este responsável? Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      cancelText: 'Cancelar',
+      variant: 'destructive'
+    });
+    
+    if (confirmed) {
       deleteResponsible(id);
     }
   };
@@ -398,6 +417,18 @@ export default function ProcessingUnits() {
         responsible={editingResponsible}
         processingUnits={units}
         isLoading={isCreatingResponsible || isUpdatingResponsible}
+      />
+
+      <ConfirmDialog
+        open={confirmState.open}
+        onOpenChange={confirmState.onOpenChange}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        variant={confirmState.variant}
+        onConfirm={confirmState.onConfirm}
+        onCancel={confirmState.onCancel}
       />
     </div>
   );

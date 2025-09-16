@@ -20,7 +20,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useFinancialReports, type ReportFilters } from '@/hooks/useFinancialReports';
 import { type TransactionFilters } from '@/hooks/useFinancialTransactions';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useFinancialCategories } from '@/hooks/useFinancialCategories';
 
@@ -31,7 +31,7 @@ interface FinancialReportExporterProps {
 export const FinancialReportExporter: React.FC<FinancialReportExporterProps> = ({ 
   defaultFilters 
 }) => {
-  const { toast } = useToast();
+  // Using sonner toast
   const { data: companySettings } = useCompanySettings();
   const { data: categories = [], isLoading: categoriesLoading } = useFinancialCategories();
   
@@ -114,11 +114,7 @@ export const FinancialReportExporter: React.FC<FinancialReportExporterProps> = (
     
     if (date && dateTo && date > dateTo) {
 
-      toast({
-        title: 'Data inválida',
-        description: 'A data inicial deve ser anterior à data final.',
-        variant: 'destructive'
-      });
+      toast.error('A data inicial deve ser anterior à data final.');
       return;
     }
     
@@ -132,11 +128,7 @@ export const FinancialReportExporter: React.FC<FinancialReportExporterProps> = (
     
     if (date && dateFrom && date < dateFrom) {
 
-      toast({
-        title: 'Data inválida',
-        description: 'A data final deve ser posterior à data inicial.',
-        variant: 'destructive'
-      });
+      toast.error('A data final deve ser posterior à data inicial.');
       return;
     }
     
@@ -168,17 +160,10 @@ export const FinancialReportExporter: React.FC<FinancialReportExporterProps> = (
         logoUrl: companySettings?.logo_url || undefined
       });
       
-      toast({
-        title: 'Relatório exportado!',
-        description: 'O arquivo PDF foi baixado com sucesso.'
-      });
+      toast.success('O arquivo PDF foi baixado com sucesso.');
     } catch (error) {
       console.error('Erro ao exportar PDF:', error);
-      toast({
-        title: 'Erro na exportação',
-        description: 'Não foi possível gerar o relatório PDF.',
-        variant: 'destructive'
-      });
+      toast.error('Não foi possível gerar o relatório PDF.');
     } finally {
       setIsExporting(false);
     }
@@ -195,17 +180,10 @@ export const FinancialReportExporter: React.FC<FinancialReportExporterProps> = (
         fileName: `relatorio-financeiro-${format(new Date(), 'yyyy-MM-dd')}.xlsx`
       });
       
-      toast({
-        title: 'Relatório exportado!',
-        description: 'O arquivo Excel foi baixado com sucesso.'
-      });
+      toast.success('O arquivo Excel foi baixado com sucesso.');
     } catch (error) {
       console.error('Erro ao exportar Excel:', error);
-      toast({
-        title: 'Erro na exportação',
-        description: 'Não foi possível gerar o relatório Excel.',
-        variant: 'destructive'
-      });
+      toast.error('Não foi possível gerar o relatório Excel.');
     } finally {
       setIsExporting(false);
     }

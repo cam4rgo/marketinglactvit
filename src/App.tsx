@@ -19,7 +19,6 @@ import ProcessingUnits from "./pages/ProcessingUnits";
 import { CommemorateDatesPage } from "./pages/CommemorateDatesPage";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import PublicApproval from "@/pages/PublicApproval";
 import { ProtectedRoutes } from "@/components/auth/ProtectedRoutes";
@@ -63,7 +62,6 @@ function App() {
             </ProtectedRoutes>
           } />
         </Routes>
-        <Toaster />
         <SonnerToaster />
       </Router>
     </QueryClientProvider>

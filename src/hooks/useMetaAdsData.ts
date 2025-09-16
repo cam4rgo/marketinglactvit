@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { useApiIntegrations } from './useApiIntegrations';
 
 // Tipos para Meta Ads API
@@ -81,7 +81,7 @@ interface MetaAdsMetadata {
 // Hook principal para dados do Meta Ads
 export const useMetaAdsData = () => {
   const { integrations } = useApiIntegrations();
-  const { toast } = useToast();
+  // Using sonner toast
 
   // Buscar integração ativa do Meta Ads
   const metaIntegration = integrations?.find(
@@ -106,7 +106,7 @@ export const useMetaAdsData = () => {
 // Hook para buscar campanhas do Meta Ads
 export const useMetaCampaigns = (filters?: MetaAdsFilters) => {
   const { integration, isConfigured, metadata } = useMetaAdsData();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useQuery({
     queryKey: ['meta-campaigns', integration?.id, filters],
@@ -155,11 +155,7 @@ export const useMetaCampaigns = (filters?: MetaAdsFilters) => {
         return data.data || [];
       } catch (error) {
         console.error('Erro ao buscar campanhas Meta Ads:', error);
-        toast({
-          title: "Erro ao carregar campanhas",
-          description: error instanceof Error ? error.message : 'Erro desconhecido',
-          variant: "destructive",
-        });
+        toast.error(error instanceof Error ? error.message : 'Erro ao carregar campanhas');
         throw error;
       }
     },
@@ -176,7 +172,7 @@ export const useMetaCampaignInsights = (
   selectedMetrics?: MetricsSelection
 ) => {
   const { integration, isConfigured, metadata } = useMetaAdsData();
-  const { toast } = useToast();
+  // Using sonner toast
   const { data: campaigns } = useMetaCampaigns(); // Adicionar para buscar todas as campanhas
 
   return useQuery({
@@ -281,11 +277,7 @@ export const useMetaCampaignInsights = (
         return data.data || [];
       } catch (error) {
         console.error('Erro ao buscar insights Meta Ads:', error);
-        toast({
-          title: "Erro ao carregar métricas",
-          description: error instanceof Error ? error.message : 'Erro desconhecido',
-          variant: "destructive",
-        });
+        toast.error(error instanceof Error ? error.message : 'Erro ao carregar métricas');
         throw error;
       }
     },
@@ -299,7 +291,7 @@ export const useMetaCampaignInsights = (
 // Hook para exportar dados do Meta Ads
 export const useExportMetaAdsData = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({
@@ -371,17 +363,10 @@ export const useExportMetaAdsData = () => {
       return exportData;
     },
     onSuccess: () => {
-      toast({
-        title: "Relatório exportado",
-        description: "O relatório foi baixado com sucesso.",
-      });
+      toast.success('O relatório foi baixado com sucesso.');
     },
     onError: (error: Error) => {
-      toast({
-        title: "Erro na exportação",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 };

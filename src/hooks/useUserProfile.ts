@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 
 export interface UserProfile {
   id: string;
@@ -44,7 +44,7 @@ export const useUserProfile = () => {
 
 export const useUpdateUserProfile = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async (updates: Partial<Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>>) => {
@@ -77,18 +77,11 @@ export const useUpdateUserProfile = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-      toast({
-        title: "Perfil atualizado",
-        description: "Seu perfil foi atualizado com sucesso.",
-      });
+      toast.success("Seu perfil foi atualizado com sucesso.");
     },
     onError: (error) => {
       console.error('Update user profile error:', error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar o perfil.",
-        variant: "destructive",
-      });
+      toast.error("Não foi possível salvar o perfil.");
     },
   });
 };

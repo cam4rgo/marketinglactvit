@@ -1,37 +1,36 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { generateWhatsAppLink, unformatPhoneNumber } from '@/lib/utils';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { generateWhatsAppLink } from '@/lib/utils';
+
+interface CreateRepresentativeData {
+  nome_completo: string;
+  telefone: string;
+  escritorio: string;
+  cidades_atendidas: string;
+  estado?: string;
+  tipo: 'representante' | 'broker';
+  status: 'ativo' | 'inativo';
+  link_whatsapp?: string;
+}
 
 export interface ComercialRepresentative {
   id: string;
   user_id: string;
   nome_completo: string;
   telefone: string;
-  link_whatsapp?: string;
   escritorio: string;
-  cidades_atendidas: string[];
+  cidades_atendidas: string;
   estado?: string;
   tipo: 'representante' | 'broker';
   status: 'ativo' | 'inativo';
   created_at: string;
   updated_at: string;
-}
-
-export interface CreateRepresentativeData {
-  nome_completo: string;
-  telefone: string;
-  escritorio: string;
-  cidades_atendidas: string[];
-  estado?: string;
-  tipo: 'representante' | 'broker';
-  status: 'ativo' | 'inativo';
   link_whatsapp?: string;
 }
 
 export function useComercialRepresentatives() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const generateWhatsAppLinkDeprecated = (telefone: string) => {
@@ -157,10 +156,7 @@ export function useComercialRepresentatives() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comercial-representatives'] });
       queryClient.invalidateQueries({ queryKey: ['comercial-representatives-states'] });
-      toast({
-        title: 'Sucesso',
-        description: 'Representante cadastrado com sucesso!',
-      });
+      toast.success('Representante cadastrado com sucesso!');
     },
     onError: (error: any) => {
       console.error('Erro na criação:', error);
@@ -172,11 +168,7 @@ export function useComercialRepresentatives() {
         errorMessage = 'Você não tem permissão para cadastrar representantes. Contate um administrador.';
       }
       
-      toast({
-        title: 'Erro',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(errorMessage);
     },
   });
 
@@ -221,10 +213,7 @@ export function useComercialRepresentatives() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comercial-representatives'] });
       queryClient.invalidateQueries({ queryKey: ['comercial-representatives-states'] });
-      toast({
-        title: 'Sucesso',
-        description: 'Representante atualizado com sucesso!',
-      });
+      toast.success('Representante atualizado com sucesso!');
     },
     onError: (error: any) => {
       console.error('Erro na atualização:', error);
@@ -235,11 +224,7 @@ export function useComercialRepresentatives() {
         errorMessage = 'Você não tem permissão para atualizar representantes. Contate um administrador.';
       }
       
-      toast({
-        title: 'Erro',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(errorMessage);
     },
   });
 
@@ -267,10 +252,7 @@ export function useComercialRepresentatives() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comercial-representatives'] });
       queryClient.invalidateQueries({ queryKey: ['comercial-representatives-states'] });
-      toast({
-        title: 'Sucesso',
-        description: 'Representante removido com sucesso!',
-      });
+      toast.success('Representante removido com sucesso!');
     },
     onError: (error: any) => {
       console.error('Erro na exclusão:', error);
@@ -281,11 +263,7 @@ export function useComercialRepresentatives() {
         errorMessage = 'Você não tem permissão para remover representantes. Contate um administrador.';
       }
       
-      toast({
-        title: 'Erro',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(errorMessage);
     },
   });
 

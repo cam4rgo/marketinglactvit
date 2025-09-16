@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export interface ApprovalMedia {
   id: string;
@@ -52,7 +52,7 @@ export const getMediaUrl = (filePath: string) => {
 
 export const useCreateApprovalPost = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({ post, files }: { post: any, files: File[] }) => {
@@ -124,25 +124,18 @@ export const useCreateApprovalPost = () => {
       queryClient.invalidateQueries({ queryKey: ['approval-posts-stats'] });
       // Manter a invalidação original para compatibilidade
       queryClient.invalidateQueries({ queryKey: ['approval-posts'] });
-      toast({
-        title: "Post criado",
-        description: "Seu post foi criado e está aguardando aprovação.",
-      });
+      toast.success('Seu post foi criado e está aguardando aprovação.');
     },
     onError: (error) => {
       console.error('Create post error:', error);
-      toast({
-        title: "Erro ao criar post",
-        description: "Não foi possível criar o post.",
-        variant: "destructive",
-      });
+      toast.error('Não foi possível criar o post.');
     },
   });
 };
 
 export const useUpdateApprovalPostContent = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({ 
@@ -270,25 +263,18 @@ export const useUpdateApprovalPostContent = () => {
       queryClient.invalidateQueries({ queryKey: ['approval-posts'] });
       queryClient.invalidateQueries({ queryKey: ['approval-posts-optimized'] });
       queryClient.invalidateQueries({ queryKey: ['approval-posts-stats'] });
-      toast({
-        title: "Post atualizado",
-        description: "Seu post foi editado e reenviado para aprovação.",
-      });
+      toast.success('Seu post foi editado e reenviado para aprovação.');
     },
     onError: (error) => {
       console.error('Update post content error:', error);
-      toast({
-        title: "Erro ao editar post",
-        description: error.message || "Não foi possível editar o post.",
-        variant: "destructive",
-      });
+      toast.error(error.message || 'Não foi possível editar o post.');
     },
   });
 };
 
 export const useUpdateApprovalPost = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Partial<ApprovalPost>) => {
@@ -314,18 +300,14 @@ export const useUpdateApprovalPost = () => {
     },
     onError: (error) => {
       console.error('Update post error:', error);
-      toast({
-        title: "Erro ao atualizar",
-        description: "Não foi possível atualizar o post.",
-        variant: "destructive",
-      });
+      toast.error('Não foi possível atualizar o post.');
     },
   });
 };
 
 export const useDeleteApprovalPost = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async (postId: string) => {
@@ -376,18 +358,14 @@ export const useDeleteApprovalPost = () => {
     },
     onError: (error) => {
       console.error('Delete post error:', error);
-      toast({
-        title: "Erro ao excluir",
-        description: "Não foi possível excluir o post.",
-        variant: "destructive",
-      });
+      toast.error('Não foi possível excluir o post.');
     },
   });
 };
 
 export const useAddComment = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({ post_id, comment_text }: { post_id: string, comment_text: string }) => {
@@ -429,25 +407,18 @@ export const useAddComment = () => {
       queryClient.invalidateQueries({ queryKey: ['approval-posts'] });
       queryClient.invalidateQueries({ queryKey: ['approval-post', variables.post_id] });
       
-      toast({
-        title: "Comentário adicionado",
-        description: "Seu comentário foi adicionado com sucesso.",
-      });
+      toast.success('Seu comentário foi adicionado com sucesso.');
     },
     onError: (error) => {
       console.error('Add comment error:', error);
-      toast({
-        title: "Erro ao comentar",
-        description: "Não foi possível adicionar o comentário.",
-        variant: "destructive",
-      });
+      toast.error('Não foi possível adicionar o comentário.');
     },
   });
 };
 
 export const useCreateComment = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({ postId, comment }: { postId: string, comment: string }) => {
@@ -489,18 +460,11 @@ export const useCreateComment = () => {
       queryClient.invalidateQueries({ queryKey: ['approval-posts'] });
       queryClient.invalidateQueries({ queryKey: ['approval-post', variables.postId] });
       
-      toast({
-        title: "Comentário adicionado",
-        description: "Seu comentário foi adicionado com sucesso.",
-      });
+      toast.success('Seu comentário foi adicionado com sucesso.');
     },
     onError: (error) => {
       console.error('Create comment error:', error);
-      toast({
-        title: "Erro ao comentar",
-        description: "Não foi possível adicionar o comentário.",
-        variant: "destructive",
-      });
+      toast.error('Não foi possível adicionar o comentário.');
     },
   });
 };
@@ -558,7 +522,7 @@ export const getApprovalPost = async (postId: string): Promise<ApprovalPost> => 
 
 export const useReorderMedia = (postId?: string) => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return {
     reorderMedia: async (newOrder: ApprovalMedia[]) => {
@@ -589,10 +553,7 @@ export const useReorderMedia = (postId?: string) => {
       queryClient.invalidateQueries({ queryKey: ['approval-posts-optimized'] });
       queryClient.invalidateQueries({ queryKey: ['approval-posts-optimized', postId] });
       
-      toast({
-        title: "Ordem atualizada",
-        description: "A ordem das mídias foi atualizada com sucesso.",
-      });
+      toast.success('A ordem das mídias foi atualizada com sucesso.');
     }
   };
 };

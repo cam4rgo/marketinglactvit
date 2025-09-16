@@ -19,17 +19,14 @@ import {
   Instagram,
   TrendingUp
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const MetaApiInstructions: React.FC = () => {
-  const { toast } = useToast();
+  // Using sonner toast
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: "Copiado!",
-      description: "Texto copiado para a área de transferência.",
-    });
+    toast.success('Texto copiado para a área de transferência.');
   };
 
   const steps = [

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { createLocalDate } from '@/lib/utils';
 import {
   CommemorativeDate,
@@ -15,7 +15,7 @@ import {
 } from '@/types/commemorative-dates';
 
 export function useCommemorateDates(filters?: CommemorateDateFilters) {
-  const { toast } = useToast();
+  // Using sonner toast
   const queryClient = useQueryClient();
 
   // Query para buscar todas as datas comemorativas
@@ -155,17 +155,10 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
       }, 100);
       
       console.log('🔄 [DEBUG] Cache atualizado após criação');
-      toast({
-        title: 'Sucesso!',
-        description: 'Data comemorativa criada com sucesso.',
-      });
+      toast.success('Data comemorativa criada com sucesso.');
     },
     onError: (error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     },
   });
 
@@ -215,54 +208,14 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
     },
     onSuccess: (updatedData) => {
       
-      // Atualizar cache manualmente para todas as queries relacionadas
-      queryClient.getQueryCache().findAll({ 
-        predicate: (query) => {
-          const queryKey = query.queryKey;
-          return queryKey[0] === 'commemorative-dates';
-        }
-      }).forEach((query) => {
-        queryClient.setQueryData(query.queryKey, (oldData: CommemorativeDate[] | undefined) => {
-          if (!oldData) return [updatedData];
-          
-          const updatedList = oldData.map(item => 
-            item.id === updatedData.id ? updatedData : item
-          );
-          console.log('🔄 [DEBUG] Cache atualizado manualmente para query:', query.queryKey, updatedList.length, 'itens');
-          return updatedList;
-        });
-      });
-      
-      // Invalidar todas as queries relacionadas para garantir sincronização
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const queryKey = query.queryKey;
-          return queryKey[0] === 'commemorative-dates';
-        }
-      });
-      
-      // Forçar refetch para garantir que os dados sejam atualizados na UI
-      setTimeout(() => {
-        queryClient.refetchQueries({ 
-          predicate: (query) => {
-            const queryKey = query.queryKey;
-            return queryKey[0] === 'commemorative-dates';
-          }
-        });
-      }, 100);
+      // Invalidar queries para atualização automática
+      queryClient.invalidateQueries({ queryKey: ['commemorative-dates'] });
       
       console.log('🔄 [DEBUG] Cache atualizado após edição');
-      toast({
-        title: 'Sucesso!',
-        description: 'Data comemorativa atualizada com sucesso.',
-      });
+      toast.success('Data comemorativa atualizada com sucesso.');
     },
     onError: (error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     },
   });
 
@@ -283,22 +236,11 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
       console.log('✅ [DEBUG] Data comemorativa excluída com sucesso');
       // Invalidação otimizada do cache
       queryClient.invalidateQueries({ queryKey: ['commemorative-dates'] });
-      // Aguardar um pouco antes de refetch para evitar condições de corrida
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ['commemorative-dates'] });
-      }, 100);
       console.log('🔄 [DEBUG] Cache invalidado após exclusão');
-      toast({
-        title: 'Sucesso!',
-        description: 'Data comemorativa excluída com sucesso.',
-      });
+      toast.success('Data comemorativa excluída com sucesso.');
     },
     onError: (error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     },
   });
 

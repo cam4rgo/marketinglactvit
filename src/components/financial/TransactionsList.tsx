@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/hooks/use-confirm';
 import { TransactionForm } from './TransactionForm';
 import { TransactionFilters as FilterComponent } from './TransactionFilters';
 import { useFinancialTransactions, useDeleteTransaction, type Transaction } from '@/hooks/useFinancialTransactions';
@@ -38,13 +40,22 @@ export const TransactionsList = ({ filters, onFiltersChange }: TransactionsListP
   const { data: transactions = [], isLoading, error } = useFinancialTransactions(filters);
   const { data: categories = [] } = useFinancialCategories();
   const deleteTransactionMutation = useDeleteTransaction();
+  const { confirm: confirmAction, confirmState } = useConfirm();
 
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir esta transação?')) {
+    const confirmed = await confirmAction({
+      title: 'Excluir Transação',
+      description: 'Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      cancelText: 'Cancelar',
+      variant: 'destructive'
+    });
+    
+    if (confirmed) {
       try {
         await deleteTransactionMutation.mutateAsync(id);
       } catch (error) {
@@ -292,6 +303,19 @@ export const TransactionsList = ({ filters, onFiltersChange }: TransactionsListP
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Dialog de Confirmação */}
+      <ConfirmDialog
+        open={confirmState.open}
+        onOpenChange={confirmState.onOpenChange}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        variant={confirmState.variant}
+        onConfirm={confirmState.onConfirm}
+        onCancel={confirmState.onCancel}
+      />
     </Card>
   );
 };

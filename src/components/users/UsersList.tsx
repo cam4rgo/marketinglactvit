@@ -3,10 +3,10 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useUsers, useUpdateUserRole, useDeleteUser, type User } from '@/hooks/useUsers';
+import { useConfirm } from '@/hooks/use-confirm';
 import { Trash2, Shield, Eye, User as UserIcon } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -33,13 +33,22 @@ export const UsersList: React.FC = () => {
   const { data: users, isLoading } = useUsers();
   const updateUserRole = useUpdateUserRole();
   const deleteUser = useDeleteUser();
+  const { confirm } = useConfirm();
 
   const handleRoleChange = (userId: string, newRole: 'admin' | 'viewer' | 'user') => {
     updateUserRole.mutate({ userId, newRole });
   };
 
-  const handleDeleteUser = (userId: string) => {
-    deleteUser.mutate(userId);
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    const confirmed = await confirm({
+      title: "Excluir Usuário",
+      description: `Tem certeza que deseja excluir o usuário ${userName}? Esta ação não pode ser desfeita.`,
+      variant: "destructive"
+    });
+    
+    if (confirmed) {
+      deleteUser.mutate(userId);
+    }
   };
 
   if (isLoading) {
@@ -131,37 +140,15 @@ export const UsersList: React.FC = () => {
                           </SelectContent>
                         </Select>
 
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="text-white border-none hover:opacity-90"
-                              style={{ backgroundColor: '#EF4343' }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Excluir Usuário</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tem certeza que deseja excluir o usuário {user.full_name || user.email}? 
-                                Esta ação não pode ser desfeita.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteUser(user.id)}
-                                className="text-white hover:opacity-90"
-                                style={{ backgroundColor: '#EF4343' }}
-                              >
-                                Excluir
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="text-white border-none hover:opacity-90"
+                          style={{ backgroundColor: '#EF4343' }}
+                          onClick={() => handleDeleteUser(user.id, user.full_name || user.email)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import type { SectorResponsible, CreateSectorResponsibleData, UpdateSectorResponsibleData } from '@/types/processing-units';
 
 // Função para gerar link do WhatsApp
@@ -15,7 +15,7 @@ function generateWhatsAppLink(phone: string): string {
 }
 
 export function useSectorResponsibles() {
-  const { toast } = useToast();
+  // Using sonner toast
   const queryClient = useQueryClient();
 
   // Query para buscar todos os responsáveis
@@ -214,17 +214,10 @@ export function useSectorResponsibles() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sector-responsibles'] });
-      toast({
-        title: 'Sucesso',
-        description: 'Responsável criado com sucesso!',
-      });
+      toast.success('Responsável criado com sucesso!');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     },
   });
 
@@ -314,17 +307,10 @@ export function useSectorResponsibles() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sector-responsibles'] });
-      toast({
-        title: 'Sucesso',
-        description: 'Responsável atualizado com sucesso!',
-      });
+      toast.success('Responsável atualizado com sucesso!');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     },
   });
 
@@ -354,17 +340,10 @@ export function useSectorResponsibles() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sector-responsibles'] });
-      toast({
-        title: 'Sucesso',
-        description: 'Responsável deletado com sucesso!',
-      });
+      toast.success('Responsável deletado com sucesso!');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     },
   });
 

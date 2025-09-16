@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import type { Database } from '@/integrations/supabase/types';
 
 type ApiIntegrationRow = Database['public']['Tables']['api_integrations']['Row'];
@@ -29,7 +29,7 @@ export const useApiIntegrations = () => {
 
 export const useCreateIntegration = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async (data: Omit<ApiIntegrationInsert, 'user_id'>) => {
@@ -50,24 +50,17 @@ export const useCreateIntegration = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['api-integrations'] });
-      toast({
-        title: "Integração criada",
-        description: "A integração foi configurada com sucesso.",
-      });
+      toast.success("A integração foi configurada com sucesso.");
     },
     onError: (error) => {
-      toast({
-        title: "Erro ao criar integração",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 };
 
 export const useUpdateIntegration = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & ApiIntegrationUpdate) => {
@@ -83,24 +76,17 @@ export const useUpdateIntegration = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['api-integrations'] });
-      toast({
-        title: "Integração atualizada",
-        description: "As configurações foram salvas com sucesso.",
-      });
+      toast.success("As configurações foram salvas com sucesso.");
     },
     onError: (error) => {
-      toast({
-        title: "Erro ao atualizar integração",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 };
 
 export const useDeleteIntegration = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -113,17 +99,10 @@ export const useDeleteIntegration = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['api-integrations'] });
-      toast({
-        title: "Integração removida",
-        description: "A integração foi removida com sucesso.",
-      });
+      toast.success("A integração foi removida com sucesso.");
     },
     onError: (error) => {
-      toast({
-        title: "Erro ao remover integração",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
 };

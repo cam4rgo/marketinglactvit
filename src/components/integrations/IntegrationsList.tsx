@@ -3,13 +3,14 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useApiIntegrations, useDeleteIntegration, type ApiIntegration } from '@/hooks/useApiIntegrations';
+import { useConfirm } from '@/hooks/use-confirm';
 import { Trash2, Settings, ExternalLink, Loader2 } from 'lucide-react';
 
 export const IntegrationsList: React.FC = () => {
   const { integrations, loading } = useApiIntegrations();
   const deleteMutation = useDeleteIntegration();
+  const { confirm } = useConfirm();
 
   const getIntegrationIcon = (type: string) => {
     switch (type) {
@@ -41,11 +42,19 @@ export const IntegrationsList: React.FC = () => {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteMutation.mutateAsync(id);
-    } catch (error) {
-      console.error('Error deleting integration:', error);
+  const handleDelete = async (id: string, integrationName: string) => {
+    const confirmed = await confirm({
+      title: "Confirmar exclusão",
+      description: `Tem certeza de que deseja excluir a integração ${integrationName}? Esta ação não pode ser desfeita e você perderá acesso aos dados desta API.`,
+      variant: "destructive"
+    });
+    
+    if (confirmed) {
+      try {
+        await deleteMutation.mutateAsync(id);
+      } catch (error) {
+        console.error('Error deleting integration:', error);
+      }
     }
   };
 
@@ -113,39 +122,17 @@ export const IntegrationsList: React.FC = () => {
                   Configurar
                 </Button>
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={deleteMutation.isPending}
-                      className="text-white border-none hover:opacity-90"
-                      style={{ backgroundColor: '#EF4343' }}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Excluir
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Tem certeza de que deseja excluir esta integração? 
-                        Esta ação não pode ser desfeita e você perderá acesso aos dados desta API.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDelete(integration.id)}
-                        className="text-white hover:opacity-90"
-                        style={{ backgroundColor: '#EF4343' }}
-                      >
-                        Excluir
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={deleteMutation.isPending}
+                  className="text-white border-none hover:opacity-90"
+                  style={{ backgroundColor: '#EF4343' }}
+                  onClick={() => handleDelete(integration.id, getIntegrationName(integration.integration_type))}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Excluir
+                </Button>
               </div>
             </div>
 

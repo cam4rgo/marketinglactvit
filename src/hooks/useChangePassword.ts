@@ -1,9 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 
 export const useChangePassword = () => {
-  const { toast } = useToast();
+  // Using sonner toast
 
   return useMutation({
     mutationFn: async ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) => {
@@ -35,18 +35,11 @@ export const useChangePassword = () => {
       return { success: true };
     },
     onSuccess: () => {
-      toast({
-        title: "Senha alterada",
-        description: "Sua senha foi alterada com sucesso.",
-      });
+      toast.success("Sua senha foi alterada com sucesso.");
     },
     onError: (error: Error) => {
       console.error('Change password error:', error);
-      toast({
-        title: "Erro ao alterar senha",
-        description: error.message || "Não foi possível alterar a senha.",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Não foi possível alterar a senha.");
     },
   });
 };

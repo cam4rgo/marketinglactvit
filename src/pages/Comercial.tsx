@@ -4,16 +4,18 @@ import { ModuleProtection } from '@/components/auth/ModuleProtection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Users, Building2, UserCheck, Search, Map } from 'lucide-react';
+import { Plus, Users, Building2, UserCheck, Search } from 'lucide-react';
 import { useComercialRepresentatives } from '@/hooks/useComercialRepresentatives';
 import { RepresentativeForm } from '@/components/comercial/RepresentativeForm';
 import { RepresentativesList } from '@/components/comercial/RepresentativesList';
-import { MapModal } from '@/components/MapModal';
-import type { ComercialRepresentative } from '@/hooks/useComercialRepresentatives';
+
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/hooks/use-confirm';
+import type { ComercialRepresentative } from '@/types/comercial';
 
 export default function Comercial() {
   const [isFormOpen, setIsFormOpen] = React.useState(false);
-  const [isMapOpen, setIsMapOpen] = React.useState(false);
+
   const [editingRepresentative, setEditingRepresentative] = React.useState<ComercialRepresentative | undefined>();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = React.useState('');
@@ -95,9 +97,19 @@ export default function Comercial() {
     setEditingRepresentative(undefined);
   };
 
-  const handleDelete = (id: string) => {
+  const { confirm: confirmAction, confirmState } = useConfirm();
+
+  const handleDelete = async (id: string) => {
     console.log('Deletando representante:', id);
-    if (confirm('Tem certeza que deseja excluir este representante?')) {
+    const confirmed = await confirmAction({
+      title: 'Excluir Representante',
+      description: 'Tem certeza que deseja excluir este representante? Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      cancelText: 'Cancelar',
+      variant: 'destructive'
+    });
+    
+    if (confirmed) {
       deleteRepresentative(id);
     }
   };
@@ -153,14 +165,7 @@ export default function Comercial() {
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
-          <Button 
-            onClick={() => setIsMapOpen(true)} 
-            variant="outline" 
-            className="w-full sm:w-auto"
-          >
-            <Map className="mr-2 h-4 w-4" />
-            Mapa
-          </Button>
+
           <Button onClick={handleCreateNew} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Novo Cadastro
@@ -282,10 +287,19 @@ export default function Comercial() {
         isLoading={isCreating || isUpdating}
       />
       
-      {/* Modal do Mapa */}
-      <MapModal
-        isOpen={isMapOpen}
-        onClose={() => setIsMapOpen(false)}
+
+      
+      {/* Dialog de Confirmação */}
+      <ConfirmDialog
+        open={confirmState.open}
+        onOpenChange={confirmState.onOpenChange}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        variant={confirmState.variant}
+        onConfirm={confirmState.onConfirm}
+        onCancel={confirmState.onCancel}
       />
     </div>
   );
