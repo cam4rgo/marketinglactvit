@@ -117,7 +117,7 @@ export const CommemorateDateForm: React.FC<CommemorateDateFormProps> = ({
       
       const submitData = {
         title: data.title,
-        description: data.description?.trim() || undefined,
+        description: data.description?.trim() || '',
         date: formattedDate,
         is_mandatory: data.is_mandatory,
         post_type: data.post_type,

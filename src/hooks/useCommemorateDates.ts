@@ -179,10 +179,19 @@ export function useCommemorateDates(filters?: CommemorateDateFilters) {
         throw new Error('Usuário não autenticado');
       }
       
-      // Preparar payload removendo campos undefined/null
-      const cleanData = Object.fromEntries(
-        Object.entries(data).filter(([_, value]) => value !== undefined)
-      );
+      // Preparar payload tratando campos vazios adequadamente
+      const cleanData: Record<string, any> = {};
+      
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined) {
+          // Para description, permitir null quando vazia para remover do banco
+          if (key === 'description' && (value === '' || value === undefined)) {
+            cleanData[key] = null;
+          } else {
+            cleanData[key] = value;
+          }
+        }
+      });
       
       const updatePayload = {
         ...cleanData,
